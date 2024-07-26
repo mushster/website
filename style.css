@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Abel&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
+
+
+
+html, body {
+    font-family: 'EB Garamond'; font-size: 22px;
+}
+
+a, a:visited, a:active {
+    text-decoration: none;
+    color: black;
+   }
+
+a:hover {
+    font-style: italic;
+}
+
+nav a {
+    padding: 10px;
+}
