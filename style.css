@@ -15,8 +15,30 @@ a:hover {
 }
 
 nav a {
-    padding: 10px;
+    /* padding: 20px; */
+    margin: 5px;
+
+
 }
+
+/* .container {
+    margin: 350px;
+} */
+
+#main-text {
+    margin: 300px;
+} 
+
+.contact-links {
+    margin: 260px;
+    padding: 40px;
+    font-size: 17px;
+} 
+
+p {
+    font-size: 22px;
+}
+
 
 
 
