@@ -20,16 +20,18 @@ nav a {
 }
 
 .container {
-    margin: 30px;
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 20px; 
 }
 
 #main-text {
-    margin: 300px;
+    margin-top: 20vh;
 } 
 
 .contact-links {
-    margin: 260px;
-    padding: 40px;
+    margin: 200px;
+    padding: 50px;
     font-size: 17px;
 } 
 
