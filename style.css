@@ -17,13 +17,11 @@ a:hover {
 nav a {
     /* padding: 20px; */
     margin: 5px;
-
-
 }
 
-/* .container {
-    margin: 350px;
-} */
+.container {
+    margin: 30px;
+}
 
 #main-text {
     margin: 300px;
