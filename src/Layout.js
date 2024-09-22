@@ -51,61 +51,59 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white p-2 font-serif">
+    <div className="min-h-screen grid grid-rows-[1fr_auto] bg-white p-2 font-serif">
       <Helmet>
-        <title>Aryan</title>
+        <title>Aryan Musharaf</title>
       </Helmet>
       
-      <div className="flex flex-grow max-w-5xl mx-auto w-full">
-        {/* Left column with main content */}
-        <main className="w-3/4 pr-8">
-          {activeSection === 'home' && (
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light mb-12 tracking-wide">
-              Aryan Musharaf
-            </h1>
-          )}
-          <div className="prose prose-sm sm:prose-base space-y-4">
-            {contentMap[activeSection]}
-          </div>
-        </main>
+      <div className="flex items-start pt-20"> 
+        <div className="flex flex-grow max-w-5xl mx-auto w-full">
+          {/* Left column with main content */}
+          <main className="w-3/4 pr-8">
+            {activeSection === 'home' && (
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-light mb-12 tracking-wide">
+                Aryan Musharaf
+              </h1>
+            )}
+            <div className="prose prose-sm sm:prose-base space-y-4">
+              {contentMap[activeSection]}
+            </div>
+          </main>
 
-        {/* Right column with navbar */}
-        <nav className="w-1/4 pt-8">
-          <ul className="space-y-2">
-            {navItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => setActiveSection(item.id)}
-                  className={`text-lg transition-colors focus:outline-none w-full text-left
-                    ${activeSection === item.id
-                      ? 'text-black font-semibold'
-                      : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                >
-                  {item.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          {/* Right column with navbar */}
+          <nav className="w-1/4 pt-8">
+            <ul className="space-y-2">
+              {navItems.map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => setActiveSection(item.id)}
+                    className={`text-lg transition-colors focus:outline-none w-full text-left
+                      ${activeSection === item.id
+                        ? 'text-black font-semibold'
+                        : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
 
       {/* Footer with Social Links */}
-      <footer className="mt-6 flex justify-center space-x-4">
+      <footer className="flex justify-center space-x-4 py-6">
         <a href="https://x.com/aryanmusharaf" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors">
-          <X size={24} />
-          <span className="sr-only">X</span>
+          X
         </a>
         <a href="mailto:aryanmusharaf11@gmail.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-red-500 transition-colors">
-          <Mail size={24} />
-          <span className="sr-only">Email</span>
+          Email
         </a>
         <a href="https://linkedin.com/in/aryanmusharaf" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-700 transition-colors">
-          <Linkedin size={24} />
-          <span className="sr-only">LinkedIn</span>
+          LinkedIn
         </a>
       </footer>
-
     </div>
   );
 };
