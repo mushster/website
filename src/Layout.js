@@ -68,7 +68,7 @@ const Layout = () => {
                   rel="noopener noreferrer"
                   className="block group"
                 >
-                  <h3 className="text-xl text-black group-hover:text-[#b319ab] group-hover:italic transition-all">Wiki-Explorer</h3>
+                  <h3 className="text-xl text-black group-hover:text-[#b319ab] group-hover:italic transition-all">WikiLens</h3>
                   <p className="text-gray-600 text-sm">An easy way to rabbit hole through Wikipedia</p>
                 </a>
               </li>
