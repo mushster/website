@@ -1,14 +1,18 @@
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './Layout';
+import BookNotes from './components/BookNotes';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github.css';
 
 function App() {
   return (
-    <Router>
-      <Layout />
-    </Router>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />} />
+        <Route path="/books/:bookId" element={<BookNotes />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

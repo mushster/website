@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  .prose {
+    font-size: 14px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  .pt-20 {
+    padding-top: 10px;
+  }
+  .pr-8 {
+    padding-right: 4px;
+  }
+}
