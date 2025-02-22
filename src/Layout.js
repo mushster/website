@@ -63,7 +63,7 @@ const Layout = () => {
               </li>
               <li>
                 <a 
-                  href="https://devpost.com/software/catapult-rxlsq0" 
+                  href="https://github.com/mushster/wiki-explorer" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="block group"
