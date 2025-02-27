@@ -57,6 +57,38 @@ const Layout = () => {
         <section>
           <div className="space-y-6">
             <ul className="list-none space-y-4">
+            <li>
+                <a 
+                  href="https://www.box.com/partners/zoom" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block group"
+                >
+                  <h3 className="text-xl text-black group-hover:text-[#b319ab] group-hover:italic transition-all flex items-center">
+                    Box for Zoom
+                    <span className="ml-2 w-2 h-2 bg-[#b319ab] rounded-full inline-block"></span>
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Designed and built cloud recordings for Box's Zoom integration
+                  </p>
+                </a>
+              </li>
+              {/* <li>
+                <a 
+                  href="https://www.box.com/partners/zoom" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block group"
+                >
+                  <h3 className="text-xl text-black group-hover:text-[#b319ab] group-hover:italic transition-all flex items-center">
+                    Gallery
+                    <span className="ml-2 w-2 h-2 bg-[#b319ab] rounded-full inline-block"></span>
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Various UI designs in vanilla HTML/CSS
+                  </p>
+                </a>
+              </li> */}
               <li>
                 <a 
                   href="https://github.com/mushster/AeroForecast" 
@@ -68,6 +100,7 @@ const Layout = () => {
                   <p className="text-gray-600 text-sm">A system that predicts flight delays using machine learning</p>
                 </a>
               </li>
+              
               <li>
                 <a 
                   href="https://github.com/mushster/wiki-explorer" 
