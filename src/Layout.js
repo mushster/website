@@ -43,6 +43,13 @@ const Layout = () => {
             <li>I have always believed in the existence of a soul, something more than our base instincts. Can we rigorously prove that such a thing exists?</li>
           </ul>
         </section>
+
+        {/* <section>
+          <h2 className="text-[23px] font-light mb-4">What I'm Reading</h2>
+          <p className="text-[16px] leading-relaxed">
+            I'm currently reading:
+          </p>
+        </section> */}
       </div>
     ),
     projects: (
