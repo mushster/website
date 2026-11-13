@@ -1,0 +1,81 @@
+/* Home: one centered window; each choice opens a new centered window and the earlier ones
+   shrink to plain title columns on the left. Sizes are tuned for Fanwood's small x-height. */
+.hm {
+  --bg: #f6f6f6; --panel: #ffffff; --fg: #171717; --muted: #6f6f6f; --faint: #a1a1a1; --sel: #efefef; --rule: #e6e6e6;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 48px rgba(0, 0, 0, 0.09);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative; height: 100dvh; overflow: hidden; background: var(--bg); color: var(--fg);
+  font: 400 18px/1.25 "Fanwood Text", "Iowan Old Style", Georgia, serif;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+@media (prefers-color-scheme: dark) {
+  .hm {
+    --bg: #0b0b0b; --panel: #1a1a1a; --fg: #ededed; --muted: #8f8f8f; --faint: #5e5e5e; --sel: #242424; --rule: #282828;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 48px rgba(0, 0, 0, 0.55);
+  }
+  body:has(.hm) { background: #0b0b0b; }
+}
+.hm ::selection { background: var(--fg); color: var(--bg); }
+.hm h1, .hm h2 { font: inherit; }
+.hm button { font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.hm a:focus-visible, .hm button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 6px; }
+.hm kbd { font: 400 14px/1 inherit; font-family: inherit; color: var(--muted); background: var(--sel); border-radius: 4px; padding: 3px 5px; min-width: 20px; text-align: center; display: inline-block; }
+
+.hm .pane {
+  position: absolute; left: 0; top: 46%; height: min(520px, calc(100% - 140px)); display: flex; flex-direction: column;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow);
+  transition: transform 480ms var(--ease), width 480ms var(--ease), height 480ms var(--ease), opacity 260ms ease-out, box-shadow 300ms ease-out, background-color 300ms ease-out, border-color 300ms ease-out;
+  will-change: transform;
+}
+.hm.boot .pane { transition: none; }
+.hm .pane:first-of-type:not(.back) { height: min(600px, calc(100% - 110px)); }
+.hm .in { display: flex; flex-direction: column; min-height: 0; flex: 1; transition: opacity 340ms ease-out 70ms; }
+.hm .pane.gone, .hm .pane.hid { opacity: 0; pointer-events: none; }
+.hm .pane.gone .in { opacity: 0; transition-delay: 0s; transition-duration: 160ms; }
+
+.hm .home { padding: 36px 36px 12px; display: flex; flex-direction: column; gap: 16px; }
+.hm .home p { font-size: 20px; line-height: 1.2; max-width: 54ch; }
+.hm .who { display: flex; flex-direction: column; }
+.hm .role, .hm .kind, .hm .d { color: var(--muted); }
+.hm .n { color: var(--faint); white-space: nowrap; }
+.hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; }
+.hm .hd h2 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm .bk { width: 24px; height: 24px; border-radius: 6px; text-align: center; color: var(--muted); flex: none; }
+.hm .bk:hover { background: var(--sel); color: var(--fg); }
+.hm .bd { padding: 0 8px 8px; overflow-y: auto; min-height: 0; flex: 1; }
+.hm .pane:first-of-type:not(.back) .bd { padding: 12px 24px 24px; }
+
+.hm .lst { display: flex; flex-direction: column; gap: 1px; }
+.hm .lst button { width: 100%; padding: 7px 12px; border-radius: 8px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.hm .pane:first-of-type:not(.back) .lst button { padding: 9px 12px; }
+.hm .lst button.two { flex-direction: column; gap: 0; align-items: stretch; }
+.hm .lst .d { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm .lst button:hover, .hm .lst button.cur, .hm .lst button.on { background: var(--sel); }
+
+/* Earlier windows lose their card and shrink to a bare column of titles; only the picked row stays lit. */
+.hm .pane.back { box-shadow: none; background: transparent; border-color: transparent; cursor: pointer; }
+.hm .pane.back .home p, .hm .pane.back .d, .hm .pane.back .bk, .hm .pane.back .n, .hm .pane.back .role { display: none; }
+.hm .pane.back .home { padding: 14px 12px 6px; }
+.hm .pane.back .hd { padding: 14px 12px 10px; }
+.hm .pane.back h1, .hm .pane.back h2 { color: var(--muted); font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm .pane.back .bd { padding-inline: 0; overflow: hidden; }
+.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 17px; padding: 4px 12px; transition: color 160ms ease-out; }
+.hm .pane.back .lst .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm .pane.back .lst button.on { color: var(--fg); }
+.hm .pane.back:hover .lst button:not(.on) { color: var(--muted); }
+.hm .pane[data-back="2"] .in { opacity: 0.55; }
+
+.hm .pv { padding: 4px 22px 24px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1; }
+.hm .pv h1 { font-size: 22px; }
+.hm .txt { display: flex; flex-direction: column; gap: 12px; font-size: 20px; line-height: 1.2; }
+.hm .meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 20px; font-size: 17px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.hm .meta dt { color: var(--muted); }
+.hm .meta dd { overflow-wrap: anywhere; }
+.hm .open { align-self: flex-start; display: inline-flex; gap: 10px; align-items: center; padding: 6px 8px 6px 12px; border: 1px solid var(--rule); border-radius: 8px; transition: background 120ms ease-out, transform 120ms var(--ease); }
+.hm .open:hover { background: var(--sel); }
+.hm .open:active { transform: scale(0.97); }
+
+.hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
+.hm .keys span { margin: 0 8px 0 2px; }
+@media (hover: none) { .hm .keys, .hm .open kbd { display: none; } .hm .open { padding-right: 12px; } }
+@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } }
