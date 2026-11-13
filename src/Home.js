@@ -60,6 +60,29 @@ export function paneLayout(W, d) {
   return { w, left: left.map(Math.round) };
 }
 
+// Set REACT_APP_NOW_PLAYING_URL to the deployed worker (see worker/). Without it the strip never shows.
+const NOW_PLAYING_URL = process.env.REACT_APP_NOW_PLAYING_URL;
+
+function useNowPlaying() {
+  const [track, setTrack] = useState(null);
+  useEffect(() => {
+    if (!NOW_PLAYING_URL) return undefined;
+    let live = true;
+    const load = () =>
+      fetch(NOW_PLAYING_URL)
+        .then((r) => r.json())
+        .then((t) => live && setTrack(t.playing ? t : null))
+        .catch(() => live && setTrack(null));
+    load();
+    const id = setInterval(load, 30000);
+    return () => {
+      live = false;
+      clearInterval(id);
+    };
+  }, []);
+  return track;
+}
+
 const clamp = (v, n) => Math.max(0, Math.min(n - 1, v));
 
 export default function Home() {
@@ -72,6 +95,7 @@ export default function Home() {
   const root = useRef(null);
   const listBox = useRef(null);
   const openLink = useRef(null);
+  const track = useNowPlaying();
 
   useEffect(() => {
     fetch('/llms/posts.json')
@@ -158,7 +182,7 @@ export default function Home() {
   }, [st]);
 
   const pane = (j) => ({
-    className: `pane${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
+    className: `pane${j === 0 && track ? ' has-np' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
     'data-back': j < d ? d - j : 0,
     style: { width: w[j], zIndex: j + 1, transform: `translate3d(${left[j]}px, -50%, 0)` },
     onClick: (e) => {
@@ -197,6 +221,24 @@ export default function Home() {
               ))}
             </div>
           </div>
+          {track && (
+            <a className="np" href={track.url} target="_blank" rel="noopener noreferrer" tabIndex={d === 0 ? 0 : -1} onClick={(e) => e.stopPropagation()}>
+              {track.cover ? <img className="cover" src={track.cover} alt="" /> : <span className="cover" />}
+              <span className="tx">
+                <span className="n">Listening now</span>
+                <span className="trk">
+                  <span>{track.title}</span>
+                  <span className="d">{track.artist}</span>
+                </span>
+              </span>
+              <span className="bars" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+            </a>
+          )}
         </div>
       </section>
 

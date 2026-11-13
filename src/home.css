@@ -28,7 +28,7 @@
   will-change: transform;
 }
 .hm.boot .pane { transition: none; }
-.hm .pane:first-of-type:not(.back) { height: min(600px, calc(100% - 110px)); }
+.hm .pane.has-np:not(.back) { height: min(600px, calc(100% - 110px)); }
 .hm .in { display: flex; flex-direction: column; min-height: 0; flex: 1; transition: opacity 340ms ease-out 70ms; }
 .hm .pane.gone, .hm .pane.hid { opacity: 0; pointer-events: none; }
 .hm .pane.gone .in { opacity: 0; transition-delay: 0s; transition-duration: 160ms; }
@@ -51,6 +51,22 @@
 .hm .lst button.two { flex-direction: column; gap: 0; align-items: stretch; }
 .hm .lst .d { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .lst button:hover, .hm .lst button.cur, .hm .lst button.on { background: var(--sel); }
+
+/* Now playing: only rendered while a track is playing; the landing window grows to hold it. */
+.hm .np { display: flex; align-items: center; gap: 14px; margin: 0 24px; padding: 16px 12px 22px; border-top: 1px solid var(--rule); flex: none; }
+.hm .np .cover { flex: none; width: 38px; height: 38px; border-radius: 5px; background: var(--sel); object-fit: cover; }
+.hm .np .tx { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.hm .np .n { font-size: 16px; }
+.hm .np .trk { display: flex; gap: 10px; align-items: baseline; min-width: 0; }
+.hm .np .trk span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm .np .bars { display: flex; align-items: flex-end; gap: 2px; height: 14px; flex: none; }
+.hm .np .bars i { width: 2px; height: 100%; background: var(--muted); border-radius: 1px; transform-origin: 50% 100%; animation: hm-eq 1.1s ease-in-out infinite; }
+.hm .np .bars i:nth-child(2) { animation-duration: 0.8s; animation-delay: -0.3s; }
+.hm .np .bars i:nth-child(3) { animation-duration: 1.3s; animation-delay: -0.6s; }
+.hm .np .bars i:nth-child(4) { animation-duration: 0.95s; animation-delay: -0.15s; }
+@keyframes hm-eq { 0%, 100% { transform: scaleY(0.25); } 50% { transform: scaleY(1); } }
+.hm .np:hover .bars i { background: var(--fg); }
+.hm .pane.back .np { display: none; }
 
 /* Earlier windows lose their card and shrink to a bare column of titles; only the picked row stays lit. */
 .hm .pane.back { box-shadow: none; background: transparent; border-color: transparent; cursor: pointer; }
@@ -78,4 +94,4 @@
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
 @media (hover: none) { .hm .keys, .hm .open kbd { display: none; } .hm .open { padding-right: 12px; } }
-@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i { animation: none; } }
