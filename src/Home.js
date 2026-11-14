@@ -88,6 +88,26 @@ function useNowPlaying() {
   return track;
 }
 
+// A number in [0, 1) from the browser's cryptographic random source, not the predictable Math.random.
+const rand = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
+
+// One crossing of a W by H page for a label of size w by h: it starts just outside one edge, ends just
+// outside a different edge, and bends through two random points on the way (a cubic curve). Every
+// number comes from rand(), about 256 random bits per crossing, so no two crossings are alike.
+// Returns keyframes spaced by distance travelled, so the label moves at a steady speed.
+export function crossing(W, H, w, h) {
+  const onEdge = (e) => [[-w, rand() * (H - h)], [W, rand() * (H - h)], [rand() * (W - w), -h], [rand() * (W - w), H]][e];
+  const from = Math.floor(rand() * 4);
+  const to = (from + 1 + Math.floor(rand() * 3)) % 4;
+  const p = [onEdge(from), [rand() * W, rand() * H], [rand() * W, rand() * H], onEdge(to)];
+  const at = (t) => [0, 1].map((k) => (1 - t) ** 3 * p[0][k] + 3 * (1 - t) ** 2 * t * p[1][k] + 3 * (1 - t) * t ** 2 * p[2][k] + t ** 3 * p[3][k]);
+  const pts = Array.from({ length: 49 }, (_, n) => at(n / 48));
+  let length = 0;
+  const travelled = pts.map((q, n) => (n ? (length += Math.hypot(q[0] - pts[n - 1][0], q[1] - pts[n - 1][1])) : 0));
+  const frames = pts.map((q, n) => ({ transform: `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px)`, offset: n === 48 ? 1 : travelled[n] / length }));
+  return { length, frames };
+}
+
 // Follows a link the way a click on it would.
 const follow = (href) => {
   const a = Object.assign(document.createElement('a'), { href, target: '_blank', rel: 'noopener noreferrer' });
@@ -122,6 +142,7 @@ export default function Home() {
   const first = useRef(null);
   const reader = useRef(null);
   const list0 = useRef(null);
+  const mark = useRef(null);
   const swapFrom = useRef(0);
   const swapDir = useRef(1);
   // The item row under the pointer in the trail; the rail's marker slides there and back to the current item.
@@ -156,6 +177,35 @@ export default function Home() {
 
   // Every item opens as a page. doc: a markdown file to render there. route: the page's own address.
   // href: somewhere outside the site, shown only as a small icon and never followed by a row click.
+  useEffect(() => {
+    const el = mark.current;
+    if (!el.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    let anim;
+    let live = true;
+    // startAt: how far along the first crossing begins, so the name is already on screen at load.
+    const go = (startAt) => {
+      if (!live) return;
+      // Drop the finished crossing so they do not pile up on the element.
+      if (anim) anim.cancel();
+      const { length, frames } = crossing(root.current.clientWidth, root.current.clientHeight, el.offsetWidth, el.offsetHeight);
+      const duration = (length / (30 + rand() * 20)) * 1000;
+      anim = el.animate(frames, { duration, easing: 'linear', fill: 'both' });
+      anim.currentTime = duration * startAt;
+      anim.onfinish = () => go(0);
+    };
+    go(0.3);
+    const pause = () => anim.pause();
+    const play = () => anim.play();
+    el.addEventListener('mouseenter', pause);
+    el.addEventListener('mouseleave', play);
+    return () => {
+      live = false;
+      anim.cancel();
+      el.removeEventListener('mouseenter', pause);
+      el.removeEventListener('mouseleave', play);
+    };
+  }, []);
+
   const tree = useMemo(
     () =>
       [
@@ -320,9 +370,10 @@ export default function Home() {
         <title>{NAME}</title>
       </Helmet>
 
-      {/* The name crosses the top once, edge to edge, in the only color on the site. The strip also leads home. */}
-      <button type="button" className="mark" aria-label={`${NAME}, home`} onClick={closeFolder}>
-        <span>{NAME}</span>
+      {/* The name drifts across the page behind everything else, in the only color on the site, on a path
+          that is drawn fresh for every crossing. Clicking it leads home. */}
+      <button type="button" className="mark" ref={mark} aria-label={`${NAME}, home`} onClick={closeFolder}>
+        {NAME}
       </button>
 
       <section {...pane(0)}>

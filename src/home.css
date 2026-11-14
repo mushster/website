@@ -41,14 +41,10 @@
 .hm .home p { font-size: 20px; line-height: 1.2; max-width: 54ch; }
 .hm .kind, .hm .d { color: var(--muted); }
 
-/* The name: one muted clay tone, the only color on the site. A single widely spaced line travels the
-   full width of the page from the right edge to the left, then comes round again. The negative delay
-   starts it partway across so it is on screen when the page loads. */
-.hm .mark { position: absolute; left: 0; right: 0; top: 0; height: 52px; z-index: 6; overflow: hidden; display: block; width: 100%; color: var(--name);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent); }
-.hm .mark span { position: absolute; left: 0; top: 0; line-height: 52px; white-space: nowrap; letter-spacing: 0.34em; animation: hm-cross 46s linear -17s infinite; will-change: transform; }
-.hm .mark:hover span { animation-play-state: paused; }
-@keyframes hm-cross { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+/* The name: one muted clay tone, the only color on the site. It drifts across the page behind the
+   windows and text; Home.js draws a new path for every crossing. Until the first path starts, and
+   for visitors who ask for reduced motion, it rests at the top left. */
+.hm .mark { position: absolute; left: 0; top: 0; z-index: 0; color: var(--name); letter-spacing: 0.34em; white-space: nowrap; transform: translate(17px, 18px); will-change: transform; }
 .hm .n { color: var(--faint); white-space: nowrap; }
 /* A window's header is one button: clicking anywhere on it goes back. */
 .hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; flex: none; }
@@ -155,4 +151,4 @@
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
 @media (hover: none) { .hm .keys { display: none; } }
-@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc, .hm .swap { animation: none !important; } .hm .mark span { animation: none; left: 17px; } .hm .mk, .hm .pane.back .lst button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc, .hm .swap { animation: none !important; } .hm .mk, .hm .pane.back .lst button { transition: none; } }

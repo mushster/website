@@ -1,4 +1,7 @@
-import { paneLayout } from './Home';
+import { crossing, paneLayout } from './Home';
+
+// The test environment has no browser random source, so borrow Node's.
+if (!global.crypto) global.crypto = require('crypto').webcrypto;
 
 test('the current window stays on screen and the trail is one left column, at most a quarter wide', () => {
   for (const W of [375, 700, 900, 1000, 1200, 1600]) {
@@ -27,4 +30,16 @@ test('an item page gets a wide column that stays clear of the trail', () => {
   const narrow = paneLayout(800, 2);
   expect(narrow.left[2]).toBeGreaterThanOrEqual(narrow.left[0] + narrow.w[0] + 16);
   expect(narrow.left[2] + narrow.w[2]).toBeLessThanOrEqual(800 - 16);
+});
+
+test('a crossing starts and ends off screen on different edges, and no two are alike', () => {
+  const [W, H, w, h] = [1400, 830, 300, 24];
+  const off = ([x, y]) => x <= -w || x >= W || y <= -h || y >= H;
+  const xy = (f) => f.transform.match(/-?[\d.]+/g).map(Number);
+  const a = crossing(W, H, w, h);
+  expect(off(xy(a.frames[0]))).toBe(true);
+  expect(off(xy(a.frames[48]))).toBe(true);
+  expect(xy(a.frames[0])).not.toEqual(xy(a.frames[48]));
+  a.frames.forEach((f, n) => n && expect(f.offset).toBeGreaterThanOrEqual(a.frames[n - 1].offset));
+  expect(crossing(W, H, w, h).frames).not.toEqual(a.frames);
 });
