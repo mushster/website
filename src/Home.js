@@ -182,7 +182,7 @@ export default function Home() {
 
   useLayoutEffect(() => {
     if (d && first.current.offsetHeight !== h0) setH0(first.current.offsetHeight);
-  });
+  }, [d, h0, tree, W]);
 
   // The landing window is taller only while the now-playing strip is showing.
   const cardH = (j) => (j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
