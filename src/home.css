@@ -71,11 +71,12 @@
 /* Earlier windows lose their card and shrink to a bare column of titles; only the picked row stays lit. */
 .hm .pane.back { box-shadow: none; background: transparent; border-color: transparent; cursor: pointer; }
 .hm .pane.back .home p, .hm .pane.back .d, .hm .pane.back .bk, .hm .pane.back .n, .hm .pane.back .role { display: none; }
-.hm .pane.back .home { padding: 14px 12px 6px; }
-.hm .pane.back .hd { padding: 14px 12px 10px; }
-.hm .pane.back h1, .hm .pane.back h2 { color: var(--muted); font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm .pane.back .home { padding: 14px 12px 4px; }
+.hm .pane.back .hd { padding: 14px 12px 4px; }
+.hm .pane.back h1, .hm .pane.back h2 { color: var(--muted); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .pane.back .bd { padding-inline: 0; overflow: hidden; }
-.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 17px; padding: 4px 12px; transition: color 160ms ease-out; }
+.hm .pane.back .lst { gap: 0; }
+.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; padding: 1px 12px; transition: color 160ms ease-out; }
 .hm .pane.back .lst .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .pane.back .lst button.on { color: var(--fg); }
 .hm .pane.back:hover .lst button:not(.on) { color: var(--muted); }
