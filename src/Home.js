@@ -224,7 +224,8 @@ export default function Home() {
         },
         {
           t: 'Writing',
-          items: posts.map((p) => ({ t: p.title, d: p.summary, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}` })),
+          // cover: an optional image, set per post in posts.json. It heads the essay and marks its row.
+          items: posts.map((p) => ({ t: p.title, d: p.summary, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}`, cover: p.cover })),
         },
         {
           t: 'Reading',
@@ -432,6 +433,7 @@ export default function Home() {
                     {it.d && <span className="d">{it.d}</span>}
                   </button>
                   {it.href && <Out href={it.href} label={it.t} tabIndex={d === 1 ? 0 : -1} />}
+                  {it.cover && <img className="thumb" src={it.cover} alt="" />}
                 </div>
               ))}
             </div>
@@ -452,6 +454,7 @@ export default function Home() {
             </button>
           )}
           <article className={`doc${item.airy ? ' airy' : ''}`} key={item.t}>
+            {item.cover && <img className="hero" src={item.cover} alt="" />}
             {item.doc ? (
               <Suspense fallback={null}>
                 <Doc src={item.doc} />

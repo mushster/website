@@ -118,7 +118,11 @@
 .hm .ext:hover { color: var(--fg); background: var(--sel); }
 .hm .rw .ext { position: absolute; right: 8px; top: 8px; }
 .hm .rw:has(.ext) .t { padding-right: 26px; }
-.hm .pane.back .ext { display: none; }
+.hm .pane.back .ext, .hm .pane.back .thumb { display: none; }
+/* Cover images: a small square at the right of the row, and a wide band at the head of the essay. */
+.hm .rw .thumb { position: absolute; right: 10px; top: 8px; width: 42px; height: 42px; border-radius: 6px; object-fit: cover; pointer-events: none; }
+.hm .rw:has(.thumb) .t, .hm .rw:has(.thumb) .d { padding-right: 56px; }
+.hm .doc .hero { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; object-position: 50% 32%; border-radius: 10px; margin-bottom: 1.5em; }
 .hm .doc h1 .ext { margin-left: 8px; }
 
 /* The third level has no card: every item is a full-height page you scroll. */
