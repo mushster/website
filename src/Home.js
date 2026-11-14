@@ -1,5 +1,6 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './home.css';
 
 const NAME = 'Aryan Musharaf';
@@ -19,8 +20,11 @@ const PROJECTS = [
   ['WikiLens', 'An easy way to rabbit hole through Wikipedia', 'https://github.com/mushster/wiki-explorer', 'Repository'],
   ['Catapult', 'Connecting Small Businesses with Venture Capital', 'https://devpost.com/software/catapult-rxlsq0', 'Hackathon project'],
 ];
+const Doc = lazy(() => import('./Doc'));
+
+// The third entry is the id of the notes file in public/book-notes, when there is one.
 const BOOKS = [
-  ['The Beginning of Infinity', 'David Deutsch', '#/books/beginning-of-infinity'],
+  ['The Beginning of Infinity', 'David Deutsch', 'beginning-of-infinity'],
   ['Gödel, Escher, Bach', 'Douglas Hofstadter'],
   ['Superintelligence: Paths, Dangers, Strategies', 'Nick Bostrom'],
   ['What is Life?', 'Erwin Schrödinger'],
@@ -43,12 +47,14 @@ const PHONE = 700;
 
 // Where each window sits across the page at depth d (0 landing, 1 list, 2 item). The current one is
 // centered; earlier ones shrink to one column of titles pinned to the left edge, at most a quarter wide.
-export function paneLayout(W, d) {
+// wide: the item is something to read, so it gets a reading column instead of a small window.
+export function paneLayout(W, d, wide) {
   const M = 16;
   const G = 16;
   const bw = Math.max(84, Math.min(150, W * 0.25 - M - G));
-  const w = WIDTHS.map((x, j) => Math.min(j < d ? bw : x, W - 2 * M));
   const trail = d ? bw + G : 0;
+  const room = W - 2 * M - (W >= PHONE ? trail : 0);
+  const w = [WIDTHS[0], WIDTHS[1], wide ? 680 : WIDTHS[2]].map((x, j) => Math.min(j < d ? bw : x, j === d ? room : W - 2 * M));
   const left = [];
   for (let j = 0; j < d; j++) left[j] = M;
   left[d] = Math.min(Math.max((W - w[d]) / 2, M + trail), W - M - w[d]);
@@ -79,10 +85,29 @@ function useNowPlaying() {
   return track;
 }
 
+// Follows a link the way a click on it would.
+const follow = (href) => {
+  if (!href) return;
+  const a = Object.assign(document.createElement('a'), { href, target: '_blank', rel: 'noopener noreferrer' });
+  document.body.append(a);
+  a.click();
+  a.remove();
+};
+
 const clamp = (v, n) => Math.max(0, Math.min(n - 1, v));
 
 export default function Home() {
+  const loc = useLocation();
+  const nav = useNavigate();
   const [posts, setPosts] = useState([]);
+  // Prototype switch: what an item with nothing to read does. 'preview' opens a small window, 'direct' follows its link.
+  const [thin, setThin] = useState(() => {
+    try {
+      return localStorage.getItem('thin') === 'direct' ? 'direct' : 'preview';
+    } catch {
+      return 'preview';
+    }
+  });
   // s: open folder, i: open item (-1 when closed); c0 and c1 are the keyboard cursors in each list.
   const [st, setSt] = useState({ s: -1, i: -1, c0: 0, c1: 0 });
   const [{ W, H }, setSize] = useState({ W: window.innerWidth, H: window.innerHeight });
@@ -92,6 +117,7 @@ export default function Home() {
   const shown = useRef({ s: 0, i: 0 });
   const root = useRef(null);
   const first = useRef(null);
+  const reader = useRef(null);
   const listBox = useRef(null);
   const openLink = useRef(null);
   const track = useNowPlaying();
@@ -111,14 +137,15 @@ export default function Home() {
     };
   }, []);
 
+  // read: there is something to read, so the item opens as a page. route: its own address.
   const tree = useMemo(
     () =>
       [
         {
           t: 'About',
           items: [
-            { t: 'Bio', d: LINE, kind: 'Text', body: [BIO, LINE] },
-            { t: 'Not work', d: NOT_WORK[0], kind: 'Text', body: NOT_WORK },
+            { t: 'Bio', d: LINE, kind: 'Text', read: true, body: [BIO, LINE] },
+            { t: 'Not work', d: NOT_WORK[0], kind: 'Text', read: true, body: NOT_WORK },
           ],
         },
         {
@@ -127,11 +154,17 @@ export default function Home() {
         },
         {
           t: 'Writing',
-          items: posts.map((p) => ({ t: p.title, d: p.summary, kind: 'Essay', body: [p.summary + '.'], href: `#/llms/${p.id}`, verb: 'Read', meta: [['Updated', p.lastUpdated]] })),
+          items: posts.map((p) => ({ t: p.title, d: p.summary, kind: 'Essay', read: true, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}` })),
         },
         {
           t: 'Reading',
-          items: BOOKS.map(([t, a, href]) => ({ t, d: a, kind: 'Book', href, verb: 'Read my notes', meta: [['Author', a]] })),
+          items: BOOKS.map(([t, a, notes]) => ({
+            t,
+            d: notes ? `${a} · notes` : a,
+            kind: 'Book',
+            meta: [['Author', a]],
+            ...(notes ? { read: true, doc: `/book-notes/${notes}.md`, route: `/books/${notes}` } : {}),
+          })),
         },
         {
           t: 'Elsewhere',
@@ -141,36 +174,76 @@ export default function Home() {
     [posts]
   );
 
-  const d = st.s < 0 ? 0 : st.i < 0 ? 1 : 2;
+  // A piece with its own address is open when the address says so; everything else lives in st.
+  let hit = null;
+  tree.forEach((f, s) => f.items.forEach((it, i) => it.route === loc.pathname && (hit = { s, i })));
+  const S = hit ? hit.s : st.s;
+  const I = hit ? hit.i : st.i;
+  const d = S < 0 ? 0 : I < 0 ? 1 : 2;
   // The list and item windows keep their last contents while they slide away.
-  if (st.s >= 0) shown.current.s = st.s;
-  if (st.i >= 0) shown.current.i = st.i;
+  if (S >= 0) shown.current.s = S;
+  if (I >= 0) shown.current.i = I;
   const folder = tree[shown.current.s] || tree[0];
   const item = folder.items[shown.current.i] || folder.items[0];
-  const { w, left } = paneLayout(W, d);
+  const reading = d === 2 && !!item.read;
+  const { w, left } = paneLayout(W, d, !!item.read);
+
+  const home = () => hit && nav('/');
+  const openFolder = (n) => {
+    home();
+    setSt({ s: n, i: -1, c0: n, c1: 0 });
+  };
+  const closeFolder = () => {
+    home();
+    setSt({ ...st, s: -1, i: -1 });
+  };
+  const closeItem = (c1 = I) => {
+    home();
+    setSt({ ...st, s: S, i: -1, c0: S, c1 });
+  };
+  const openItem = (n) => {
+    const it = tree[S].items[n];
+    if (!it.read && thin === 'direct') {
+      closeItem(n);
+      follow(it.href);
+    } else if (it.route) {
+      setSt({ ...st, s: S, i: -1, c0: S, c1: n });
+      if (loc.pathname !== it.route) nav(it.route);
+    } else {
+      home();
+      setSt({ ...st, s: S, i: n, c0: S, c1: n });
+    }
+  };
 
   useEffect(() => {
     const onKey = (e) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const mv = { ArrowDown: 1, ArrowUp: -1 }[e.key];
-      const n = d ? tree[st.s].items.length : tree.length;
       if (mv) {
-        if (d === 0) setSt({ ...st, c0: clamp(st.c0 + mv, n) });
-        else if (d === 1) setSt({ ...st, c1: clamp(st.c1 + mv, n) });
-        else setSt({ ...st, i: clamp(st.i + mv, n), c1: clamp(st.i + mv, n) });
+        // While reading, the arrow keys scroll the page.
+        if (reading) return;
+        if (d === 0) setSt({ ...st, c0: clamp(st.c0 + mv, tree.length) });
+        else if (d === 1) setSt({ ...st, c1: clamp(st.c1 + mv, tree[S].items.length) });
+        else openItem(clamp(I + mv, tree[S].items.length));
       } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
-        if (d === 0) setSt({ ...st, s: st.c0, c1: 0 });
-        else if (d === 1) setSt({ ...st, i: st.c1 });
-        else if (e.key === 'Enter' && openLink.current && document.activeElement !== openLink.current) openLink.current.click();
+        if (d === 0) openFolder(st.c0);
+        else if (d === 1) openItem(st.c1);
+        else if (e.key === 'Enter' && !reading && openLink.current && document.activeElement !== openLink.current) openLink.current.click();
         else return;
       } else if ((e.key === 'ArrowLeft' || e.key === 'Escape' || e.key === 'Backspace') && d) {
-        setSt(d === 1 ? { ...st, s: -1, i: -1 } : { ...st, i: -1 });
+        if (d === 1) closeFolder();
+        else closeItem();
       } else return;
       e.preventDefault();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [st, d, tree]);
+  });
+
+  // Focus the page being read so arrows, space and page keys scroll it.
+  useEffect(() => {
+    if (reading) reader.current.focus({ preventScroll: true });
+  }, [reading, I]);
 
   useEffect(() => {
     const box = listBox.current;
@@ -178,33 +251,34 @@ export default function Home() {
     if (!row) return;
     if (row.offsetTop < box.scrollTop) box.scrollTop = row.offsetTop;
     else if (row.offsetTop + row.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = row.offsetTop + row.offsetHeight - box.clientHeight + 8;
-  }, [st]);
+  }, [st, I]);
 
   useLayoutEffect(() => {
     if (d && first.current.offsetHeight !== h0) setH0(first.current.offsetHeight);
   }, [d, h0, tree, W]);
 
   // The landing window is taller only while the now-playing strip is showing.
-  const cardH = (j) => (j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
+  const tall = (j) => j === 2 && item.read;
+  const cardH = (j) => (tall(j) ? H : j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
-  const y = (j) => (j < d ? top + (j ? h0 + 4 : 0) : Math.round(H * 0.46 - cardH(j) / 2));
+  const y = (j) => (j < d ? top + (j ? h0 + 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
   const pane = (j) => ({
     ref: j === 0 ? first : undefined,
-    className: `pane${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
+    className: `pane${tall(j) ? ' read' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
     'data-back': j < d ? d - j : 0,
     style: { width: w[j], height: j < d ? undefined : cardH(j), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
     onClick: (e) => {
-      if (j < d && !e.target.closest('a')) setSt(j === 0 ? { ...st, s: -1, i: -1 } : { ...st, i: -1 });
+      if (j < d && !e.target.closest('a')) (j === 0 ? closeFolder : closeItem)();
     },
   });
-  const pick = (next) => (e) => {
+  const stop = (fn) => (e) => {
     e.stopPropagation();
-    setSt({ ...st, ...next });
+    fn();
   };
   const external = item.href && !item.href.startsWith('#');
 
   return (
-    <main ref={root} className={`hm${ready ? '' : ' boot'}`}>
+    <main ref={root} className={`hm${ready ? '' : ' boot'}${reading ? ' reading' : ''}`}>
       <Helmet>
         <title>{NAME}</title>
       </Helmet>
@@ -222,7 +296,7 @@ export default function Home() {
           <div className="bd">
             <div className="lst">
               {tree.map((f, n) => (
-                <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} className={n === st.s ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={pick({ s: n, c0: n, i: -1, c1: 0 })}>
+                <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} className={n === S ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={stop(() => openFolder(n))}>
                   <span className="t">{f.t}</span>
                 </button>
               ))}
@@ -252,7 +326,7 @@ export default function Home() {
       <section {...pane(1)} aria-hidden={d < 1}>
         <div className="in">
           <div className="hd">
-            <button type="button" className="bk" aria-label="Back" tabIndex={d === 1 ? 0 : -1} onClick={pick({ s: -1, i: -1 })}>
+            <button type="button" className="bk" aria-label="Back" tabIndex={d === 1 ? 0 : -1} onClick={stop(closeFolder)}>
               ‹
             </button>
             <h2>{folder.t}</h2>
@@ -263,7 +337,7 @@ export default function Home() {
           <div className="bd" ref={listBox}>
             <div className="lst">
               {folder.items.map((it, n) => (
-                <button type="button" tabIndex={d === 1 ? 0 : -1} key={it.t} className={`two ${n === st.i ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''}`} onClick={pick({ i: n, c1: n })}>
+                <button type="button" tabIndex={d === 1 ? 0 : -1} key={it.t} className={`two ${n === I ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''}`} onClick={stop(() => openItem(n))}>
                   <span className="t">{it.t}</span>
                   <span className="d">{it.d}</span>
                 </button>
@@ -274,43 +348,60 @@ export default function Home() {
       </section>
 
       <section {...pane(2)} aria-hidden={d < 2}>
-        <div className="in">
+        <div className="in" ref={reader} tabIndex={-1} style={item.read ? { paddingTop: top } : undefined}>
           <div className="hd">
-            <button type="button" className="bk" aria-label="Back" tabIndex={d === 2 ? 0 : -1} onClick={pick({ i: -1 })}>
+            <button type="button" className="bk" aria-label="Back" tabIndex={d === 2 ? 0 : -1} onClick={stop(() => closeItem())}>
               ‹
             </button>
             <h2 className="kind">{item.kind}</h2>
           </div>
-          <div className="pv">
-            <h1>{item.t}</h1>
-            {item.body && (
-              <div className="txt">
-                {item.body.map((p) => (
-                  <p key={p}>{p}</p>
+          {item.read ? (
+            <article className="doc">
+              {item.doc ? (
+                <Suspense fallback={null}>
+                  <Doc src={item.doc} />
+                </Suspense>
+              ) : (
+                <>
+                  <h1>{item.t}</h1>
+                  {item.body.map((p) => (
+                    <p key={p}>{p}</p>
+                  ))}
+                </>
+              )}
+            </article>
+          ) : (
+            <div className="pv">
+              <h1>{item.t}</h1>
+              {item.body && (
+                <div className="txt">
+                  {item.body.map((p) => (
+                    <p key={p}>{p}</p>
+                  ))}
+                </div>
+              )}
+              <dl className="meta">
+                <dt>In</dt>
+                <dd>{folder.t}</dd>
+                {(item.meta || []).map(([k, v]) => (
+                  <React.Fragment key={k}>
+                    <dt>{k}</dt>
+                    <dd>{v}</dd>
+                  </React.Fragment>
                 ))}
-              </div>
-            )}
-            <dl className="meta">
-              <dt>In</dt>
-              <dd>{folder.t}</dd>
-              {(item.meta || []).map(([k, v]) => (
-                <React.Fragment key={k}>
-                  <dt>{k}</dt>
-                  <dd>{v}</dd>
-                </React.Fragment>
-              ))}
-            </dl>
-            {item.href && (
-              <a className="open" ref={openLink} href={item.href} tabIndex={d === 2 ? 0 : -1} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
-                {item.verb} {external ? '↗' : '→'}
-                <kbd>↵</kbd>
-              </a>
-            )}
-          </div>
+              </dl>
+              {item.href && (
+                <a className="open" ref={openLink} href={item.href} tabIndex={d === 2 ? 0 : -1} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+                  {item.verb} {external ? '↗' : '→'}
+                  <kbd>↵</kbd>
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
-      <footer className="keys" aria-hidden="true">
+      <footer className="keys">
         <kbd>↑</kbd>
         <kbd>↓</kbd>
         <span>move</span>
@@ -318,6 +409,27 @@ export default function Home() {
         <span>open</span>
         <kbd>←</kbd>
         <span>back</span>
+        <span className="proto">
+          Nothing to read:
+          {[
+            ['preview', 'preview window'],
+            ['direct', 'open the link'],
+          ].map(([k, label]) => (
+            <button
+              type="button"
+              key={k}
+              className={thin === k ? 'on' : ''}
+              onClick={() => {
+                setThin(k);
+                try {
+                  localStorage.setItem('thin', k);
+                } catch {}
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </span>
       </footer>
     </main>
   );

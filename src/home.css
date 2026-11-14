@@ -91,6 +91,33 @@
 .hm .open:hover { background: var(--sel); }
 .hm .open:active { transform: scale(0.97); }
 
+/* Reading page: the third level drops its card and becomes a full-height column you scroll. */
+.hm .pane.read { background: transparent; border-color: transparent; box-shadow: none; border-radius: 0; }
+.hm .pane.read .in { overflow-y: auto; padding-bottom: 120px; outline: 0; scrollbar-width: none; }
+.hm .pane.read .in::-webkit-scrollbar { display: none; }
+.hm .pane.read .hd { padding: 0 0 18px; margin-left: -6px; }
+.hm .doc { font-size: 20px; line-height: 1.42; overflow-wrap: break-word; }
+.hm .doc > * + * { margin-top: 0.85em; }
+.hm .doc h1 { font-size: 27px; line-height: 1.15; }
+.hm .doc h2 { font-size: 22px; line-height: 1.2; margin-top: 1.7em; }
+.hm .doc h3 { font-size: 20px; font-style: italic; margin-top: 1.4em; }
+.hm .doc ul, .hm .doc ol { padding-left: 1.3em; }
+.hm .doc ul { list-style: disc; }
+.hm .doc ol { list-style: decimal; }
+.hm .doc li + li { margin-top: 0.3em; }
+.hm .doc a { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+.hm .doc blockquote { border-left: 2px solid var(--rule); padding-left: 16px; color: var(--muted); font-style: italic; }
+.hm .doc code { font: 15px/1.5 ui-monospace, "SF Mono", Menlo, monospace; background: var(--sel); padding: 1px 5px; border-radius: 4px; }
+.hm .doc pre { overflow-x: auto; background: var(--sel); padding: 14px 16px; border-radius: 8px; }
+.hm .doc pre code { background: none; padding: 0; }
+.hm .doc hr { border: 0; border-top: 1px solid var(--rule); margin-block: 2em; }
+.hm .doc img { max-width: 100%; }
+.hm.reading .keys { opacity: 0; pointer-events: none; }
+
+.hm .keys { transition: opacity 200ms ease-out; }
+.hm .keys .proto { margin-left: 22px; display: inline-flex; gap: 4px; align-items: center; }
+.hm .keys .proto button { padding: 1px 9px; border-radius: 999px; color: var(--muted); }
+.hm .keys .proto button.on { background: var(--sel); color: var(--fg); }
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
 @media (hover: none) { .hm .keys, .hm .open kbd { display: none; } .hm .open { padding-right: 12px; } }
