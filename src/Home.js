@@ -272,11 +272,12 @@ export default function Home() {
   const tall = (j) => j === 2;
   const cardH = (j) => (tall(j) ? H : j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
-  // On a page the folder list is shifted up so your folder sits on the top line. The other folders stay
-  // laid out around it and only fade, so folding and unfolding never moves or resizes anything.
+  // On a page the folder list is shifted up so your folder sits on the top line. The other folders keep
+  // their places in the layout; folding slides each one (--dy) onto your folder's row as it fades, and
+  // unfolding slides them back out. Only transforms and opacity change, so the layout never shifts.
   const lift = d === 2 ? S * ROW : 0;
   // The item list always sits just under the folded folder row; while the folders are unfolded it is hidden.
-  const y = (j) => (j < d ? (j ? top + h0 - foldBy - 4 : top - lift) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
+  const y = (j) => (j < d ? (j ? top + h0 - foldBy - 4 + (open0 ? 10 : 0) : top - lift) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
   const pane = (j) => ({
     ref: j === 0 ? first : undefined,
     ...(j === 0 ? { onMouseLeave: () => unfold(false) } : {}),
@@ -310,7 +311,7 @@ export default function Home() {
           <div className="bd">
             <div className="lst" ref={list0}>
               {tree.map((f, n) => (
-                <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} onMouseEnter={() => d === 2 && n === S && unfold(true)} className={n === S ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={stop(() => openFolder(n))}>
+                <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} style={{ '--dy': `${(S - n) * ROW}px` }} onMouseEnter={() => d === 2 && n === S && unfold(true)} className={n === S ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={stop(() => openFolder(n))}>
                   <span className="t">{f.t}</span>
                 </button>
               ))}
