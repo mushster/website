@@ -205,17 +205,18 @@ export default function Home() {
         return null;
       }
     };
-    // startAt: how far along the first crossing begins, so the name is already on screen at load.
+    // entering: the first crossing after the page loads. It begins with most of the name already past
+    // the edge, so the name is seen sliding in straight away instead of after a wait off screen.
     // from: start the path here instead of at an edge.
-    const go = (startAt, from) => {
+    const go = (entering, from) => {
       if (!live || still || pinned) return;
       if (anim) anim.cancel();
       const [W, H] = size();
       const { length, frames } = crossing(W, H, el.offsetWidth, el.offsetHeight, from);
       const duration = (length / (30 + rand() * 20)) * 1000;
       anim = el.animate(frames, { duration, easing: 'linear', fill: 'both' });
-      anim.currentTime = duration * startAt;
-      anim.onfinish = () => go(0);
+      if (entering) anim.currentTime = duration * Math.min(0.5, (0.7 * el.offsetWidth) / length);
+      anim.onfinish = () => go(false);
     };
     // The spot is stored as fractions of the page, so it survives a resize and a reload.
     const restore = () => {
@@ -226,7 +227,7 @@ export default function Home() {
       return true;
     };
     pinned = restore();
-    go(0.3);
+    go(true);
 
     const down = (e) => {
       const [x, y] = where();
@@ -270,7 +271,7 @@ export default function Home() {
       try {
         localStorage.removeItem('name-at');
       } catch {}
-      go(0, where());
+      go(false, where());
     };
     const pause = () => anim && anim.pause();
     const play = () => anim && !grab && anim.play();
