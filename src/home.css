@@ -74,12 +74,20 @@
 .hm .pane.back .hd { padding: 6px 12px 4px; }
 .hm .pane.back h1, .hm .pane.back h2 { color: var(--muted); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .pane.back .bd { padding-inline: 0; overflow: hidden; }
-.hm .pane.back .lst { gap: 0; }
-.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; padding: 1px 12px; transition: color 160ms ease-out; }
+/* Trail rows are exactly 22px tall so the marker can slide by row index. */
+.hm .pane.back .lst { gap: 0; position: relative; }
+.hm .pane.back .lst::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.hm .mk { display: none; }
+.hm .pane.back .mk { display: block; position: absolute; left: 0; top: 0; width: 1px; height: 22px; background: var(--fg); transform: translateY(calc(var(--at) * 22px)); transition: transform 260ms var(--ease); }
+.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; line-height: 20px; padding: 1px 12px; transition: color 140ms ease-out, transform 220ms var(--ease); }
+.hm .pane.back .lst button:hover { color: var(--fg); transform: translateX(3px); }
+.hm .pane.back .lst button:active { transform: translateX(3px) scale(0.97); transition-duration: 80ms; }
+.hm .pane.back h1, .hm .pane.back h2 { transition: color 140ms ease-out; }
+.hm .pane.back h1:hover, .hm .pane.back .hd:hover h2 { color: var(--fg); }
 .hm .pane.back .lst .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .pane.back .lst button.on { color: var(--fg); }
-.hm .pane.back:hover .lst button:not(.on) { color: var(--muted); }
-.hm .pane[data-back="2"] .in { opacity: 0.55; }
+.hm .pane[data-back="2"] .in { opacity: 0.55; transition-delay: 0s; transition-duration: 180ms; }
+.hm .pane[data-back="2"]:hover .in { opacity: 1; }
 
 .hm .meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 20px; font-size: 17px; padding-top: 14px; border-top: 1px solid var(--rule); }
 .hm .meta dt { color: var(--muted); }
@@ -116,9 +124,14 @@
 .hm .doc hr { border: 0; border-top: 1px solid var(--rule); margin-block: 2em; }
 .hm .doc img { max-width: 100%; }
 .hm.reading .keys { opacity: 0; pointer-events: none; }
+/* A page settles in when it opens or is swapped from the trail. */
+.hm .doc { animation: hm-in 320ms var(--ease) both; }
+@keyframes hm-in { from { opacity: 0; transform: translateY(8px); } }
+.hm .bk { transition: transform 200ms var(--ease), background 120ms ease-out, color 120ms ease-out; }
+.hm .hd:hover .bk { transform: translateX(-2px); }
 
 .hm .keys { transition: opacity 200ms ease-out; }
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
 @media (hover: none) { .hm .keys { display: none; } }
-@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc { animation: none; } .hm .mk, .hm .pane.back .lst button { transition: none; } }
