@@ -131,6 +131,9 @@
 .hm .doc hr { border: 0; border-top: 1px solid var(--rule); margin-block: 2em; }
 .hm .doc img { max-width: 100%; }
 .hm.reading .keys { opacity: 0; pointer-events: none; }
+/* Switching folders: the list window's rows and title travel in from the direction you moved. */
+.hm .pane:not(.back) .swap { animation: hm-swap 340ms var(--ease) both; }
+@keyframes hm-swap { from { opacity: 0; transform: translateY(var(--from, 12px)); } }
 /* A page settles in when it opens or is swapped from the trail. */
 .hm .doc { animation: hm-in 320ms var(--ease) both; }
 @keyframes hm-in { from { opacity: 0; transform: translateY(8px); } }
@@ -141,4 +144,4 @@
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
 @media (hover: none) { .hm .keys { display: none; } }
-@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc { animation: none; } .hm .mk, .hm .pane.back .lst button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc, .hm .swap { animation: none !important; } .hm .mk, .hm .pane.back .lst button { transition: none; } }

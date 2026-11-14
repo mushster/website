@@ -88,7 +88,15 @@ function useNowPlaying() {
   return track;
 }
 
-// The only way out of the site: a small icon beside a title.
+// Follows a link the way a click on it would.
+const follow = (href) => {
+  const a = Object.assign(document.createElement('a'), { href, target: '_blank', rel: 'noopener noreferrer' });
+  document.body.append(a);
+  a.click();
+  a.remove();
+};
+
+// Marks a way out of the site: a small icon beside a title.
 function Out({ href, label, linkRef, tabIndex }) {
   return (
     <a className="ext" ref={linkRef} href={href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${label} in a new tab`} tabIndex={tabIndex} onClick={(e) => e.stopPropagation()}>
@@ -114,6 +122,8 @@ export default function Home() {
   const first = useRef(null);
   const reader = useRef(null);
   const list0 = useRef(null);
+  const swapFrom = useRef(0);
+  const swapDir = useRef(1);
   // The item row under the pointer in the trail; the rail's marker slides there and back to the current item.
   const [hov, setHov] = useState(null);
   // Whether the pointer is over the top group of the trail, which unfolds it.
@@ -175,7 +185,8 @@ export default function Home() {
         },
         {
           t: 'Elsewhere',
-          items: LINKS.map(([t, href]) => ({ t, d: where(href), href, meta: [['Where', where(href)]] })),
+          // direct: these rows have nothing to show, so clicking one goes straight to its link.
+          items: LINKS.map(([t, href]) => ({ t, d: where(href), href, direct: true })),
         },
       ].filter((f) => f.items.length),
     [posts]
@@ -190,6 +201,11 @@ export default function Home() {
   // The list and item windows keep their last contents while they slide away.
   if (S >= 0) shown.current.s = S;
   if (I >= 0) shown.current.i = I;
+  // Which way the list window's contents travel when you switch folders: up the list or down it.
+  if (S >= 0 && S !== swapFrom.current) {
+    swapDir.current = S > swapFrom.current ? 1 : -1;
+    swapFrom.current = S;
+  }
   const folder = tree[shown.current.s] || tree[0];
   const item = folder.items[shown.current.i] || folder.items[0];
   const reading = d === 2;
@@ -213,7 +229,10 @@ export default function Home() {
   };
   const openItem = (n) => {
     const it = tree[S].items[n];
-    if (it.route) {
+    if (it.direct) {
+      setSt({ ...st, s: S, i: -1, c0: S, c1: n });
+      follow(it.href);
+    } else if (it.route) {
       setSt({ ...st, s: S, i: -1, c0: S, c1: n });
       if (loc.pathname !== it.route) nav(it.route);
     } else {
@@ -345,10 +364,12 @@ export default function Home() {
             <span className="bk" aria-hidden="true">
               ‹
             </span>
-            <span className="ttl">{folder.t}</span>
+            <span className="ttl swap" key={folder.t} style={{ '--from': `${swapDir.current * 14}px` }}>
+              {folder.t}
+            </span>
           </button>
           <div className="bd" ref={listBox}>
-            <div className="lst" style={{ '--at': hov ?? I }} onMouseLeave={() => setHov(null)}>
+            <div className="lst swap" key={folder.t} style={{ '--at': hov ?? I, '--from': `${swapDir.current * 14}px` }} onMouseLeave={() => setHov(null)}>
               <i className="mk" />
               {folder.items.map((it, n) => (
                 <div className="rw" key={it.t} onMouseEnter={() => setHov(n)}>
