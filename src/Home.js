@@ -158,7 +158,7 @@ export default function Home() {
 
   useLayoutEffect(() => {
     if (d && first.current.offsetHeight !== h0) setH0(first.current.offsetHeight);
-  });
+  }, [d, h0, tree, W]);
 
   const cardH = (j) => Math.min(j === 0 ? 600 : 520, H - (j === 0 ? 110 : 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
