@@ -8,12 +8,13 @@
   font: 400 18px/1.25 "Fanwood Text", "Iowan Old Style", Georgia, serif;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
+/* Dark: a neutral near-black page, with windows and text given a faint warm cast. */
 @media (prefers-color-scheme: dark) {
   .hm {
-    --bg: #0b0b0b; --panel: #1a1a1a; --fg: #ededed; --muted: #8f8f8f; --faint: #5e5e5e; --sel: #242424; --rule: #282828;
+    --bg: #111111; --panel: #1a1815; --fg: #eceae8; --muted: #96938e; --faint: #64615d; --sel: #252320; --rule: #2b2926;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 48px rgba(0, 0, 0, 0.55);
   }
-  body:has(.hm) { background: #0b0b0b; }
+  body:has(.hm) { background: #111111; }
 }
 .hm ::selection { background: var(--fg); color: var(--bg); }
 .hm h1, .hm h2 { font: inherit; }
