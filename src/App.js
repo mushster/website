@@ -17,7 +17,6 @@ function App() {
           <Route path="/llms" element={<LLMsHome />} />
           <Route path="/llms/:postId" element={<Home />} />
           <Route path="/notes-to-me" element={<Home />} />
-          <Route path="/superpowers" element={<Home />} />
         </Routes>
       </Suspense>
     </HashRouter>

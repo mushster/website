@@ -306,7 +306,6 @@ export default function Home() {
             { t: 'Not work', body: NOT_WORK },
             // airy: separate notes, one paragraph each, so they get more room between them than running prose.
             { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me', airy: true },
-            { t: 'Superpowers', doc: '/superpowers.md', route: '/superpowers', airy: true },
           ],
         },
         {
@@ -315,8 +314,9 @@ export default function Home() {
         },
         {
           t: 'Writing',
-          // cover: an optional image, set per post in posts.json. It heads the essay and marks its row.
-          items: posts.map((p) => ({ t: p.title, d: p.summary, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}`, cover: p.cover })),
+          // Optional per post in posts.json. cover: an image that heads the essay and marks its row.
+          // airy: the post is a list of short separate lines, so they get more room between them.
+          items: posts.map((p) => ({ t: p.title, d: p.summary, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}`, cover: p.cover, airy: p.airy })),
         },
         {
           t: 'Reading',

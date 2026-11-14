@@ -1,5 +1,12 @@
 [
   {
+    "id": "superpowers",
+    "title": "Superpowers",
+    "summary": "Simple things you can keep doing over and over",
+    "lastUpdated": "2026-11-13",
+    "airy": true
+  },
+  {
     "id": "emotions-are-tools",
     "title": "Emotions are tools",
     "summary": "Pick them up when you need them, and put them down before they pick you up",
