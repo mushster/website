@@ -354,7 +354,7 @@ export default function Home() {
         {
           t: 'About',
           items: [
-            { t: 'Work', body: [LEAD, BEFORE, PAST] },
+            { t: 'Work', body: [LEAD, BEFORE, PAST, LINE] },
             { t: 'Not work', body: NOT_WORK },
             // airy: separate notes, one paragraph each, so they get more room between them than running prose.
             { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me', airy: true },
@@ -548,8 +548,6 @@ export default function Home() {
         <div className="in">
           <div className="home">
             <p>{LEAD}</p>
-            <p>{BEFORE}</p>
-            <p>{LINE}</p>
           </div>
           <div className="bd">
             <div className="lst" ref={list0}>
