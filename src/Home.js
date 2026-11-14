@@ -320,9 +320,9 @@ export default function Home() {
         <title>{NAME}</title>
       </Helmet>
 
-      {/* The name sits once at the top left, in the only color on the site. It also leads home. */}
-      <button type="button" className="mark" onClick={closeFolder}>
-        {NAME}
+      {/* The name crosses the top once, edge to edge, in the only color on the site. The strip also leads home. */}
+      <button type="button" className="mark" aria-label={`${NAME}, home`} onClick={closeFolder}>
+        <span>{NAME}</span>
       </button>
 
       <section {...pane(0)}>
