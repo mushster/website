@@ -5,7 +5,6 @@ import { ExternalLink, Home as HomeIcon } from 'lucide-react';
 import './home.css';
 
 const NAME = 'Aryan Musharaf';
-const LEAD = 'I do engineering things at Hanover Park.';
 const BEFORE = 'Before that I studied computer science at Georgia Tech, where I worked on machine learning for biology and on decision making for autonomous robots.';
 const PAST = 'In the past I have worked on partner integrations at Box, and on decision making for autonomous robots with Ye Zhao.';
 const NOT_WORK = [
@@ -21,6 +20,11 @@ const PROJECTS = [
   ['Catapult', 'Connecting Small Businesses with Venture Capital', 'https://devpost.com/software/catapult-rxlsq0', 'Hackathon project'],
 ];
 const Doc = lazy(() => import('./Doc'));
+const LEAD = (
+  <>
+    I do engineering things at Hanover Park. <Out href="https://www.hanoverpark.com" label="Hanover Park" />
+  </>
+);
 
 const BOOKS = [
   ["What's Good", 'https://www.goodreads.com/search?q=What%27s+Good'],
@@ -618,8 +622,8 @@ export default function Home() {
                   {item.t}
                   {item.href && <Out href={item.href} label={item.t} linkRef={openLink} tabIndex={d === 2 ? 0 : -1} />}
                 </h1>
-                {(item.body || []).map((p) => (
-                  <p key={p}>{p}</p>
+                {(item.body || []).map((p, k) => (
+                  <p key={k}>{p}</p>
                 ))}
                 {item.meta && (
                   <dl className="meta">
