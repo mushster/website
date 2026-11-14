@@ -81,17 +81,20 @@
 .hm .pane.back:hover .lst button:not(.on) { color: var(--muted); }
 .hm .pane[data-back="2"] .in { opacity: 0.55; }
 
-.hm .pv { padding: 4px 22px 24px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1; }
-.hm .pv h1 { font-size: 22px; }
-.hm .txt { display: flex; flex-direction: column; gap: 12px; font-size: 20px; line-height: 1.2; }
 .hm .meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 20px; font-size: 17px; padding-top: 14px; border-top: 1px solid var(--rule); }
 .hm .meta dt { color: var(--muted); }
 .hm .meta dd { overflow-wrap: anywhere; }
-.hm .open { align-self: flex-start; display: inline-flex; gap: 10px; align-items: center; padding: 6px 8px 6px 12px; border: 1px solid var(--rule); border-radius: 8px; transition: background 120ms ease-out, transform 120ms var(--ease); }
-.hm .open:hover { background: var(--sel); }
-.hm .open:active { transform: scale(0.97); }
 
-/* Reading page: the third level drops its card and becomes a full-height column you scroll. */
+/* Links out of the site are only ever this small icon. */
+.hm .rw { position: relative; }
+.hm .ext { display: inline-flex; padding: 4px; border-radius: 6px; color: var(--faint); vertical-align: middle; transition: color 120ms ease-out, background 120ms ease-out; }
+.hm .ext:hover { color: var(--fg); background: var(--sel); }
+.hm .rw .ext { position: absolute; right: 8px; top: 8px; }
+.hm .rw:has(.ext) .t { padding-right: 26px; }
+.hm .pane.back .ext { display: none; }
+.hm .doc h1 .ext { margin-left: 8px; }
+
+/* The third level has no card: every item is a full-height page you scroll. */
 .hm .pane.read { background: transparent; border-color: transparent; box-shadow: none; border-radius: 0; }
 .hm .pane.read .in { overflow-y: auto; padding-bottom: 120px; outline: 0; scrollbar-width: none; }
 .hm .pane.read .in::-webkit-scrollbar { display: none; }
@@ -115,10 +118,7 @@
 .hm.reading .keys { opacity: 0; pointer-events: none; }
 
 .hm .keys { transition: opacity 200ms ease-out; }
-.hm .keys .proto { margin-left: 22px; display: inline-flex; gap: 4px; align-items: center; }
-.hm .keys .proto button { padding: 1px 9px; border-radius: 999px; color: var(--muted); }
-.hm .keys .proto button.on { background: var(--sel); color: var(--fg); }
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
-@media (hover: none) { .hm .keys, .hm .open kbd { display: none; } .hm .open { padding-right: 12px; } }
+@media (hover: none) { .hm .keys { display: none; } }
 @media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i { animation: none; } }

@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ExternalLink } from 'lucide-react';
 import './home.css';
 
 const NAME = 'Aryan Musharaf';
@@ -42,19 +43,19 @@ const LINKS = [
 ];
 
 const where = (href) => href.replace(/^(https?:\/\/(www\.)?|mailto:)/, '').replace(/\/$/, '');
-const WIDTHS = [640, 320, 460];
+const WIDTHS = [640, 320, 680];
 const PHONE = 700;
 
-// Where each window sits across the page at depth d (0 landing, 1 list, 2 item). The current one is
-// centered; earlier ones shrink to one column of titles pinned to the left edge, at most a quarter wide.
-// wide: the item is something to read, so it gets a reading column instead of a small window.
-export function paneLayout(W, d, wide) {
+// Where each window sits across the page at depth d (0 landing, 1 list, 2 the page for one item).
+// The current one is centered; earlier ones shrink to one column of titles pinned to the left edge,
+// at most a quarter wide.
+export function paneLayout(W, d) {
   const M = 16;
   const G = 16;
   const bw = Math.max(84, Math.min(150, W * 0.25 - M - G));
   const trail = d ? bw + G : 0;
   const room = W - 2 * M - (W >= PHONE ? trail : 0);
-  const w = [WIDTHS[0], WIDTHS[1], wide ? 680 : WIDTHS[2]].map((x, j) => Math.min(j < d ? bw : x, j === d ? room : W - 2 * M));
+  const w = WIDTHS.map((x, j) => Math.min(j < d ? bw : x, j === d ? room : W - 2 * M));
   const left = [];
   for (let j = 0; j < d; j++) left[j] = M;
   left[d] = Math.min(Math.max((W - w[d]) / 2, M + trail), W - M - w[d]);
@@ -85,14 +86,14 @@ function useNowPlaying() {
   return track;
 }
 
-// Follows a link the way a click on it would.
-const follow = (href) => {
-  if (!href) return;
-  const a = Object.assign(document.createElement('a'), { href, target: '_blank', rel: 'noopener noreferrer' });
-  document.body.append(a);
-  a.click();
-  a.remove();
-};
+// The only way out of the site: a small icon beside a title.
+function Out({ href, label, linkRef, tabIndex }) {
+  return (
+    <a className="ext" ref={linkRef} href={href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${label} in a new tab`} tabIndex={tabIndex} onClick={(e) => e.stopPropagation()}>
+      <ExternalLink size={15} strokeWidth={1.5} aria-hidden="true" />
+    </a>
+  );
+}
 
 const clamp = (v, n) => Math.max(0, Math.min(n - 1, v));
 
@@ -100,14 +101,6 @@ export default function Home() {
   const loc = useLocation();
   const nav = useNavigate();
   const [posts, setPosts] = useState([]);
-  // Prototype switch: what an item with nothing to read does. 'preview' opens a small window, 'direct' follows its link.
-  const [thin, setThin] = useState(() => {
-    try {
-      return localStorage.getItem('thin') === 'direct' ? 'direct' : 'preview';
-    } catch {
-      return 'preview';
-    }
-  });
   // s: open folder, i: open item (-1 when closed); c0 and c1 are the keyboard cursors in each list.
   const [st, setSt] = useState({ s: -1, i: -1, c0: 0, c1: 0 });
   const [{ W, H }, setSize] = useState({ W: window.innerWidth, H: window.innerHeight });
@@ -137,38 +130,38 @@ export default function Home() {
     };
   }, []);
 
-  // read: there is something to read, so the item opens as a page. route: its own address.
+  // Every item opens as a page. doc: a markdown file to render there. route: the page's own address.
+  // href: somewhere outside the site, shown only as a small icon and never followed by a row click.
   const tree = useMemo(
     () =>
       [
         {
           t: 'About',
           items: [
-            { t: 'Bio', d: LINE, kind: 'Text', read: true, body: [BIO, LINE] },
-            { t: 'Not work', d: NOT_WORK[0], kind: 'Text', read: true, body: NOT_WORK },
+            { t: 'Bio', d: LINE, body: [BIO, LINE] },
+            { t: 'Not work', d: NOT_WORK[0], body: NOT_WORK },
           ],
         },
         {
           t: 'Projects',
-          items: PROJECTS.map(([t, d, href, kind]) => ({ t, d, kind, body: [d + '.'], href, verb: 'Open', meta: [['Where', where(href)]] })),
+          items: PROJECTS.map(([t, d, href, kind]) => ({ t, d, body: [d + '.'], href, meta: [['Kind', kind], ['Where', where(href)]] })),
         },
         {
           t: 'Writing',
-          items: posts.map((p) => ({ t: p.title, d: p.summary, kind: 'Essay', read: true, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}` })),
+          items: posts.map((p) => ({ t: p.title, d: p.summary, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}` })),
         },
         {
           t: 'Reading',
           items: BOOKS.map(([t, a, notes]) => ({
             t,
             d: notes ? `${a} · notes` : a,
-            kind: 'Book',
             meta: [['Author', a]],
-            ...(notes ? { read: true, doc: `/book-notes/${notes}.md`, route: `/books/${notes}` } : {}),
+            ...(notes ? { doc: `/book-notes/${notes}.md`, route: `/books/${notes}` } : {}),
           })),
         },
         {
           t: 'Elsewhere',
-          items: LINKS.map(([t, href]) => ({ t, d: where(href), kind: 'Link', href, verb: 'Open', meta: [['Where', where(href)]] })),
+          items: LINKS.map(([t, href]) => ({ t, d: where(href), href, meta: [['Where', where(href)]] })),
         },
       ].filter((f) => f.items.length),
     [posts]
@@ -185,8 +178,8 @@ export default function Home() {
   if (I >= 0) shown.current.i = I;
   const folder = tree[shown.current.s] || tree[0];
   const item = folder.items[shown.current.i] || folder.items[0];
-  const reading = d === 2 && !!item.read;
-  const { w, left } = paneLayout(W, d, !!item.read);
+  const reading = d === 2;
+  const { w, left } = paneLayout(W, d);
 
   const home = () => hit && nav('/');
   const openFolder = (n) => {
@@ -203,10 +196,7 @@ export default function Home() {
   };
   const openItem = (n) => {
     const it = tree[S].items[n];
-    if (!it.read && thin === 'direct') {
-      closeItem(n);
-      follow(it.href);
-    } else if (it.route) {
+    if (it.route) {
       setSt({ ...st, s: S, i: -1, c0: S, c1: n });
       if (loc.pathname !== it.route) nav(it.route);
     } else {
@@ -220,15 +210,15 @@ export default function Home() {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const mv = { ArrowDown: 1, ArrowUp: -1 }[e.key];
       if (mv) {
-        // While reading, the arrow keys scroll the page.
-        if (reading) return;
+        // On a page long enough to scroll, the arrow keys scroll it; otherwise they move to the next item.
+        if (reading && reader.current.scrollHeight > reader.current.clientHeight) return;
         if (d === 0) setSt({ ...st, c0: clamp(st.c0 + mv, tree.length) });
         else if (d === 1) setSt({ ...st, c1: clamp(st.c1 + mv, tree[S].items.length) });
         else openItem(clamp(I + mv, tree[S].items.length));
       } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
         if (d === 0) openFolder(st.c0);
         else if (d === 1) openItem(st.c1);
-        else if (e.key === 'Enter' && !reading && openLink.current && document.activeElement !== openLink.current) openLink.current.click();
+        else if (e.key === 'Enter' && item.href && openLink.current && document.activeElement !== openLink.current) openLink.current.click();
         else return;
       } else if ((e.key === 'ArrowLeft' || e.key === 'Escape' || e.key === 'Backspace') && d) {
         if (d === 1) closeFolder();
@@ -258,7 +248,7 @@ export default function Home() {
   }, [d, h0, tree, W]);
 
   // The landing window is taller only while the now-playing strip is showing.
-  const tall = (j) => j === 2 && item.read;
+  const tall = (j) => j === 2;
   const cardH = (j) => (tall(j) ? H : j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
   const y = (j) => (j < d ? top + (j ? h0 + 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
@@ -275,8 +265,6 @@ export default function Home() {
     e.stopPropagation();
     fn();
   };
-  const external = item.href && !item.href.startsWith('#');
-
   return (
     <main ref={root} className={`hm${ready ? '' : ' boot'}${reading ? ' reading' : ''}`}>
       <Helmet>
@@ -337,10 +325,13 @@ export default function Home() {
           <div className="bd" ref={listBox}>
             <div className="lst">
               {folder.items.map((it, n) => (
-                <button type="button" tabIndex={d === 1 ? 0 : -1} key={it.t} className={`two ${n === I ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''}`} onClick={stop(() => openItem(n))}>
-                  <span className="t">{it.t}</span>
-                  <span className="d">{it.d}</span>
-                </button>
+                <div className="rw" key={it.t}>
+                  <button type="button" tabIndex={d === 1 ? 0 : -1} className={`two ${n === I ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''}`} onClick={stop(() => openItem(n))}>
+                    <span className="t">{it.t}</span>
+                    <span className="d">{it.d}</span>
+                  </button>
+                  {it.href && <Out href={it.href} label={it.t} tabIndex={d === 1 ? 0 : -1} />}
+                </div>
               ))}
             </div>
           </div>
@@ -348,56 +339,40 @@ export default function Home() {
       </section>
 
       <section {...pane(2)} aria-hidden={d < 2}>
-        <div className="in" ref={reader} tabIndex={-1} style={item.read ? { paddingTop: top } : undefined}>
+        <div className="in" ref={reader} tabIndex={-1} style={{ paddingTop: top }}>
           <div className="hd">
             <button type="button" className="bk" aria-label="Back" tabIndex={d === 2 ? 0 : -1} onClick={stop(() => closeItem())}>
               ‹
             </button>
-            <h2 className="kind">{item.kind}</h2>
+            <h2 className="kind">{folder.t}</h2>
           </div>
-          {item.read ? (
-            <article className="doc">
-              {item.doc ? (
-                <Suspense fallback={null}>
-                  <Doc src={item.doc} />
-                </Suspense>
-              ) : (
-                <>
-                  <h1>{item.t}</h1>
-                  {item.body.map((p) => (
-                    <p key={p}>{p}</p>
-                  ))}
-                </>
-              )}
-            </article>
-          ) : (
-            <div className="pv">
-              <h1>{item.t}</h1>
-              {item.body && (
-                <div className="txt">
-                  {item.body.map((p) => (
-                    <p key={p}>{p}</p>
-                  ))}
-                </div>
-              )}
-              <dl className="meta">
-                <dt>In</dt>
-                <dd>{folder.t}</dd>
-                {(item.meta || []).map(([k, v]) => (
-                  <React.Fragment key={k}>
-                    <dt>{k}</dt>
-                    <dd>{v}</dd>
-                  </React.Fragment>
+          <article className="doc">
+            {item.doc ? (
+              <Suspense fallback={null}>
+                <Doc src={item.doc} />
+              </Suspense>
+            ) : (
+              <>
+                <h1>
+                  {item.t}
+                  {item.href && <Out href={item.href} label={item.t} linkRef={openLink} tabIndex={d === 2 ? 0 : -1} />}
+                </h1>
+                {(item.body || []).map((p) => (
+                  <p key={p}>{p}</p>
                 ))}
-              </dl>
-              {item.href && (
-                <a className="open" ref={openLink} href={item.href} tabIndex={d === 2 ? 0 : -1} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
-                  {item.verb} {external ? '↗' : '→'}
-                  <kbd>↵</kbd>
-                </a>
-              )}
-            </div>
-          )}
+                {item.meta && (
+                  <dl className="meta">
+                    {item.meta.map(([k, v]) => (
+                      <React.Fragment key={k}>
+                        <dt>{k}</dt>
+                        <dd>{v}</dd>
+                      </React.Fragment>
+                    ))}
+                  </dl>
+                )}
+              </>
+            )}
+          </article>
         </div>
       </section>
 
@@ -409,27 +384,6 @@ export default function Home() {
         <span>open</span>
         <kbd>←</kbd>
         <span>back</span>
-        <span className="proto">
-          Nothing to read:
-          {[
-            ['preview', 'preview window'],
-            ['direct', 'open the link'],
-          ].map(([k, label]) => (
-            <button
-              type="button"
-              key={k}
-              className={thin === k ? 'on' : ''}
-              onClick={() => {
-                setThin(k);
-                try {
-                  localStorage.setItem('thin', k);
-                } catch {}
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </span>
       </footer>
     </main>
   );

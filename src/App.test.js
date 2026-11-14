@@ -19,12 +19,12 @@ test('the landing window is centered', () => {
   expect(left[0]).toBe((1200 - w[0]) / 2);
 });
 
-test('a reading page gets a wide column that stays clear of the trail', () => {
-  const { w, left } = paneLayout(1400, 2, true);
+test('an item page gets a wide column that stays clear of the trail', () => {
+  const { w, left } = paneLayout(1400, 2);
   expect(w[2]).toBe(680);
   expect(left[2]).toBeGreaterThanOrEqual(left[0] + w[0] + 16);
   expect(left[2] + w[2]).toBeLessThanOrEqual(1400 - 16);
-  const narrow = paneLayout(800, 2, true);
+  const narrow = paneLayout(800, 2);
   expect(narrow.left[2]).toBeGreaterThanOrEqual(narrow.left[0] + narrow.w[0] + 16);
   expect(narrow.left[2] + narrow.w[2]).toBeLessThanOrEqual(800 - 16);
 });
