@@ -1,8 +1,20 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { paneLayout } from './Home';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('the current window stays on screen and the trail is one left column, at most a quarter wide', () => {
+  for (const W of [375, 700, 900, 1000, 1200, 1600]) {
+    for (const d of [0, 1, 2]) {
+      const { w, left } = paneLayout(W, d);
+      expect(left[d]).toBeGreaterThanOrEqual(16);
+      expect(left[d] + w[d]).toBeLessThanOrEqual(W - 16);
+      for (let j = 0; j < d; j++) {
+        expect(left[j]).toBe(16);
+        if (W >= 700) expect(left[j] + w[j]).toBeLessThanOrEqual(Math.min(W * 0.25, left[d]));
+      }
+    }
+  }
+});
+
+test('the landing window is centered', () => {
+  const { w, left } = paneLayout(1200, 0);
+  expect(left[0]).toBe((1200 - w[0]) / 2);
 });
