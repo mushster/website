@@ -152,8 +152,8 @@ export default function Home() {
         {
           t: 'About',
           items: [
-            { t: 'Bio', d: LINE, body: [BIO, LINE] },
-            { t: 'Not work', d: NOT_WORK[0], body: NOT_WORK },
+            { t: 'Bio', body: [BIO, LINE] },
+            { t: 'Not work', body: NOT_WORK },
           ],
         },
         {
@@ -340,15 +340,12 @@ export default function Home() {
 
       <section {...pane(1)} aria-hidden={d < 1}>
         <div className="in">
-          <div className="hd">
-            <button type="button" className="bk" aria-label="Back" tabIndex={d === 1 ? 0 : -1} onClick={stop(closeFolder)}>
+          <button type="button" className="hd" aria-label={`Back from ${folder.t}`} tabIndex={d === 1 ? 0 : -1} onClick={stop(closeFolder)}>
+            <span className="bk" aria-hidden="true">
               ‹
-            </button>
-            <h2>{folder.t}</h2>
-            <span className="n">
-              {folder.items.length} {folder.items.length === 1 ? 'item' : 'items'}
             </span>
-          </div>
+            <span className="ttl">{folder.t}</span>
+          </button>
           <div className="bd" ref={listBox}>
             <div className="lst" style={{ '--at': hov ?? I }} onMouseLeave={() => setHov(null)}>
               <i className="mk" />
@@ -356,7 +353,7 @@ export default function Home() {
                 <div className="rw" key={it.t} onMouseEnter={() => setHov(n)}>
                   <button type="button" tabIndex={d === 1 ? 0 : -1} className={`two ${n === I ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''}`} onClick={stop(() => openItem(n))}>
                     <span className="t">{it.t}</span>
-                    <span className="d">{it.d}</span>
+                    {it.d && <span className="d">{it.d}</span>}
                   </button>
                   {it.href && <Out href={it.href} label={it.t} tabIndex={d === 1 ? 0 : -1} />}
                 </div>
@@ -368,12 +365,12 @@ export default function Home() {
 
       <section {...pane(2)} aria-hidden={d < 2}>
         <div className="in" ref={reader} tabIndex={-1} style={{ paddingTop: top }}>
-          <div className="hd">
-            <button type="button" className="bk" aria-label="Back" tabIndex={d === 2 ? 0 : -1} onClick={stop(() => closeItem())}>
+          <button type="button" className="hd" aria-label={`Back to ${folder.t}`} tabIndex={d === 2 ? 0 : -1} onClick={stop(() => closeItem())}>
+            <span className="bk" aria-hidden="true">
               ‹
-            </button>
-            <h2 className="kind">{folder.t}</h2>
-          </div>
+            </span>
+            <span className="ttl kind">{folder.t}</span>
+          </button>
           <article className="doc" key={item.t}>
             {item.doc ? (
               <Suspense fallback={null}>

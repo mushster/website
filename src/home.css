@@ -40,10 +40,11 @@
 .hm .who { display: flex; flex-direction: column; }
 .hm .role, .hm .kind, .hm .d { color: var(--muted); }
 .hm .n { color: var(--faint); white-space: nowrap; }
-.hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; }
-.hm .hd h2 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hm .bk { width: 24px; height: 24px; border-radius: 6px; text-align: center; color: var(--muted); flex: none; }
-.hm .bk:hover { background: var(--sel); color: var(--fg); }
+/* A window's header is one button: clicking anywhere on it goes back. */
+.hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; flex: none; }
+.hm .hd .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 140ms ease-out; }
+.hm .bk { width: 24px; text-align: center; color: var(--muted); flex: none; }
+.hm .hd:hover .bk, .hm .hd:hover .ttl { color: var(--fg); }
 .hm .bd { padding: 0 8px 8px; overflow-y: auto; min-height: 0; flex: 1; }
 .hm .pane:first-of-type:not(.back) .bd { padding: 12px 24px 24px; }
 
@@ -112,7 +113,7 @@
 .hm .pane.read { background: transparent; border-color: transparent; box-shadow: none; border-radius: 0; }
 .hm .pane.read .in { overflow-y: auto; padding-bottom: 120px; outline: 0; scrollbar-width: none; }
 .hm .pane.read .in::-webkit-scrollbar { display: none; }
-.hm .pane.read .hd { padding: 0 0 18px; margin-left: -6px; }
+.hm .pane.read .hd { padding: 0 0 18px; margin-left: -6px; align-self: flex-start; }
 .hm .doc { font-size: 20px; line-height: 1.42; overflow-wrap: break-word; }
 .hm .doc > * + * { margin-top: 0.85em; }
 .hm .doc h1 { font-size: 27px; line-height: 1.15; }
@@ -133,7 +134,7 @@
 /* A page settles in when it opens or is swapped from the trail. */
 .hm .doc { animation: hm-in 320ms var(--ease) both; }
 @keyframes hm-in { from { opacity: 0; transform: translateY(8px); } }
-.hm .bk { transition: transform 200ms var(--ease), background 120ms ease-out, color 120ms ease-out; }
+.hm .bk { transition: transform 200ms var(--ease), color 140ms ease-out; }
 .hm .hd:hover .bk { transform: translateX(-2px); }
 
 .hm .keys { transition: opacity 200ms ease-out; }
