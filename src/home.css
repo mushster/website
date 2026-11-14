@@ -4,7 +4,7 @@
   --bg: #f6f6f6; --panel: #ffffff; --fg: #171717; --muted: #6f6f6f; --faint: #a1a1a1; --sel: #efefef; --rule: #e6e6e6;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 48px rgba(0, 0, 0, 0.09);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --name: #a4664d; --glass: rgba(255, 255, 255, 0.66);
+  --name: #a4664d; --glass: rgba(255, 255, 255, 0.62); --frost: blur(10px) saturate(3);
   position: relative; height: 100dvh; overflow: hidden; background: var(--bg); color: var(--fg);
   font: 400 18px/1.25 "Fanwood Text", "Iowan Old Style", Georgia, serif;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
@@ -14,7 +14,7 @@
   .hm {
     --bg: #111111; --panel: #1a1815; --fg: #eceae8; --muted: #96938e; --faint: #64615d; --sel: #252320; --rule: #2b2926;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 48px rgba(0, 0, 0, 0.55);
-    --name: #c69076; --glass: rgba(35, 32, 28, 0.58);
+    --name: #c69076; --glass: rgba(19, 17, 14, 0.8); --frost: blur(13px) brightness(4.4) saturate(1.7);
   }
   body:has(.hm) { background: #111111; }
 }
@@ -26,8 +26,11 @@
 
 .hm .pane {
   position: absolute; left: 0; top: 0; display: flex; flex-direction: column;
+  /* Frosted glass that amplifies what is behind it: the name is invisible as letters back there, but
+     its color comes through the window as a glow. The tint is dark enough to cancel the brightening
+     everywhere the name is not. */
   background: var(--glass); border: 1px solid var(--rule);
-  -webkit-backdrop-filter: blur(14px) saturate(2.2); backdrop-filter: blur(14px) saturate(2.2); border-radius: 14px; box-shadow: var(--shadow);
+  -webkit-backdrop-filter: var(--frost); backdrop-filter: var(--frost); border-radius: 14px; box-shadow: var(--shadow);
   transition: transform 540ms var(--ease), width 540ms var(--ease), height 540ms var(--ease), opacity 260ms ease-out, box-shadow 300ms ease-out, background-color 300ms ease-out, border-color 300ms ease-out;
   will-change: transform;
 }
@@ -46,9 +49,9 @@
    windows and text; Home.js draws a new path for every crossing. Until the first path starts, and
    for visitors who ask for reduced motion, it rests at the top left. */
 .hm .mark { position: absolute; left: 0; top: 0; z-index: 0; color: var(--name); letter-spacing: 0.34em; white-space: nowrap; transform: translate(17px, 18px); will-change: transform; }
-/* A soft halo of the same color travels with the name. Windows are frosted glass, so as the name
-   passes behind one its color bleeds through as a diffuse glow. */
-.hm .mark::after { content: ""; position: absolute; inset: -40px -56px; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, var(--name), transparent); opacity: 0.42; filter: blur(16px); pointer-events: none; }
+/* In the open the name is plain, with no glow of its own. It disappears while you read a page. */
+.hm .mark { transition: opacity 320ms ease-out; }
+.hm.reading .mark { opacity: 0; pointer-events: none; }
 .hm .n { color: var(--faint); white-space: nowrap; }
 /* A window's header is one button: clicking anywhere on it goes back. */
 .hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; flex: none; }
