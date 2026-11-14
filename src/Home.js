@@ -114,7 +114,7 @@ export default function Home() {
   const first = useRef(null);
   const reader = useRef(null);
   const list0 = useRef(null);
-  // The trail row under the pointer, as [list, row]; its marker slides there and back to the current row.
+  // The item row under the pointer in the trail; the rail's marker slides there and back to the current item.
   const [hov, setHov] = useState(null);
   // Whether the pointer is over the top group of the trail, which unfolds it.
   const [open0, setOpen0] = useState(false);
@@ -125,7 +125,6 @@ export default function Home() {
     if (on) unfoldTimer.current = setTimeout(() => setOpen0(true), 90);
     else setOpen0(false);
   };
-  const at = (list, current) => ({ '--at': hov && hov[0] === list ? hov[1] : current });
   const listBox = useRef(null);
   const openLink = useRef(null);
   const track = useNowPlaying();
@@ -275,7 +274,7 @@ export default function Home() {
   const top = Math.round(H * 0.46 - cardH(1) / 2);
   // When the path unfolds, the whole trail shifts up so the folder you are pointing at stays under the pointer.
   const lift = d === 2 && !folded ? S * ROW : 0;
-  const y = (j) => (j < d ? top - lift + (j ? h0 - (folded ? foldBy : 0) + 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
+  const y = (j) => (j < d ? top - lift + (j ? h0 - (folded ? foldBy : 0) - 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
   const pane = (j) => ({
     ref: j === 0 ? first : undefined,
     ...(j === 0 ? { onMouseEnter: () => unfold(true), onMouseLeave: () => unfold(false) } : {}),
@@ -307,10 +306,9 @@ export default function Home() {
             <p>{LINE}</p>
           </div>
           <div className="bd">
-            <div className="lst" ref={list0} style={folded ? { '--at': 0 } : at(0, S)} onMouseLeave={() => setHov(null)}>
-              <i className="mk" />
+            <div className="lst" ref={list0}>
               {tree.map((f, n) => (
-                <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} onMouseEnter={() => setHov([0, n])} className={n === S ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={stop(() => openFolder(n))}>
+                <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} className={n === S ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={stop(() => openFolder(n))}>
                   <span className="t">{f.t}</span>
                 </button>
               ))}
@@ -349,10 +347,10 @@ export default function Home() {
             </span>
           </div>
           <div className="bd" ref={listBox}>
-            <div className="lst" style={at(1, I)} onMouseLeave={() => setHov(null)}>
+            <div className="lst" style={{ '--at': hov ?? I }} onMouseLeave={() => setHov(null)}>
               <i className="mk" />
               {folder.items.map((it, n) => (
-                <div className="rw" key={it.t} onMouseEnter={() => setHov([1, n])}>
+                <div className="rw" key={it.t} onMouseEnter={() => setHov(n)}>
                   <button type="button" tabIndex={d === 1 ? 0 : -1} className={`two ${n === I ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''}`} onClick={stop(() => openItem(n))}>
                     <span className="t">{it.t}</span>
                     <span className="d">{it.d}</span>

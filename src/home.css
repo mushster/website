@@ -79,17 +79,20 @@
 .hm .pane.back .lst { gap: 0; position: relative; }
 .hm .pane.back .lst::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--rule); }
 .hm .mk { display: none; }
-.hm .pane.back .mk { display: block; position: absolute; left: 0; top: 0; width: 1px; height: var(--row, 22px); background: var(--fg); transform: translateY(calc(var(--at) * var(--row, 22px))); transition: transform 300ms var(--ease); }
+.hm .pane.back .mk { display: block; position: absolute; left: 0; top: 0; width: 1px; height: 22px; background: var(--fg); transform: translateY(calc(var(--at) * 22px)); transition: transform 300ms var(--ease); }
 .hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; line-height: 20px; height: 22px; padding: 1px 12px; overflow: hidden; transition: color 140ms ease-out, transform 220ms var(--ease), height 540ms var(--ease), padding 540ms var(--ease), opacity 260ms ease-out; }
-/* The top group (your name and the folder) is a size up and never dimmed, so it reads as the level above. */
-.hm .pane.back:first-of-type { --row: 24px; }
+/* The top group (your name and the folder) is a size up, never dimmed, and sits flush left with no
+   rail. The rail belongs to the items: it starts directly under the folder's name and the items hang
+   off it, inset by its gutter, so they read as that folder's contents. */
 .hm .pane.back:first-of-type h1 { font-size: 18px; color: var(--fg); }
-.hm .pane.back:first-of-type .lst button { font-size: 18px; line-height: 22px; height: 24px; }
+.hm .pane.back:first-of-type .home { padding-inline: 0; }
+.hm .pane.back:first-of-type .lst::before { display: none; }
+.hm .pane.back:first-of-type .lst button { font-size: 18px; line-height: 22px; height: 24px; padding-inline: 0; }
 /* On a page the trail is a path: the other folders fold away until you point at the group, and the
    list below drops its heading because the folded row already names the folder. */
 .hm .pane.fold .lst button:not(.on) { height: 0; padding-block: 0; opacity: 0; pointer-events: none; }
 .hm .pane.back:nth-of-type(2) .hd { display: none; }
-.hm .pane.back:nth-of-type(2) .in { padding-top: 6px; }
+.hm .pane.back:nth-of-type(2) .in { padding-top: 0; }
 .hm .pane.back .lst button:hover { color: var(--fg); transform: translateX(3px); }
 .hm .pane.back .lst button:active { transform: translateX(3px) scale(0.97); transition-duration: 80ms; }
 .hm .pane.back h1, .hm .pane.back h2 { transition: color 140ms ease-out; }
