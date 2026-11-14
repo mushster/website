@@ -145,7 +145,7 @@
 .hm .doc ul { list-style: disc; }
 .hm .doc ol { list-style: decimal; }
 .hm .doc li + li { margin-top: 0.3em; }
-.hm .doc a { text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+.hm .doc a, .hm .lk { color: inherit; text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
 .hm .doc blockquote { border-left: 2px solid var(--rule); padding-left: 16px; color: var(--muted); font-style: italic; }
 .hm .doc code { font: 15px/1.5 ui-monospace, "SF Mono", Menlo, monospace; background: var(--sel); padding: 1px 5px; border-radius: 4px; }
 .hm .doc pre { overflow-x: auto; background: var(--sel); padding: 14px 16px; border-radius: 8px; }

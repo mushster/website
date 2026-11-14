@@ -22,7 +22,11 @@ const PROJECTS = [
 const Doc = lazy(() => import('./Doc'));
 const LEAD = (
   <>
-    I do engineering things at Hanover Park. <Out href="https://www.hanoverpark.com" label="Hanover Park" />
+    I do engineering things at{' '}
+    <a className="lk" href="https://www.hanoverpark.com" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+      Hanover Park
+    </a>
+    .
   </>
 );
 
