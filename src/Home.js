@@ -9,6 +9,7 @@ const ROLE = 'Software engineer';
 const BIO =
   'I build accounting software for investment funds at Hanover. Before that I studied computer science at Georgia Tech, where I worked on machine learning for biology and on decision making for autonomous robots.';
 const LINE = "Broadly, I'm interested in reasoning about the world around us.";
+const PAST = 'In the past I have worked on partner integrations at Box, and on decision making for autonomous robots with Ye Zhao.';
 const NOT_WORK = [
   "I try to spend a lot of my free time reading. I think most questions you could have in life have been asked and answered many times before, and I try to find answers of my own whether it's in history books, biographies, fiction, or even academic papers/textbooks.",
   'One day I hope to teach when I am able. Few things are more beautiful than helping impart knowledge to someone that is hungry for it.',
@@ -162,8 +163,9 @@ export default function Home() {
         {
           t: 'About',
           items: [
-            { t: 'Bio', body: [BIO, LINE] },
+            { t: 'Work', body: [BIO, PAST] },
             { t: 'Not work', body: NOT_WORK },
+            { t: 'Notes to myself', doc: '/notes-to-myself.md', route: '/notes-to-myself' },
           ],
         },
         {
