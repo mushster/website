@@ -5,7 +5,6 @@ import { ExternalLink } from 'lucide-react';
 import './home.css';
 
 const NAME = 'Aryan Musharaf';
-const ROLE = 'Software engineer';
 const BIO =
   'I build accounting software for investment funds at Hanover. Before that I studied computer science at Georgia Tech, where I worked on machine learning for biology and on decision making for autonomous robots.';
 const LINE = "Broadly, I'm interested in reasoning about the world around us.";
@@ -321,13 +320,20 @@ export default function Home() {
         <title>{NAME}</title>
       </Helmet>
 
+      {/* The name runs across the top as a slow band of color, the only color on the site. It also leads home. */}
+      <button type="button" className="marq" aria-label={`${NAME}, home`} onClick={closeFolder}>
+        <span className="trk" aria-hidden="true">
+          {Array.from({ length: 48 }, (_, n) => (
+            <span key={n} className={`c${n % 6}`}>
+              {NAME}
+            </span>
+          ))}
+        </span>
+      </button>
+
       <section {...pane(0)}>
         <div className="in">
           <div className="home">
-            <div className="who">
-              <h1>{NAME}</h1>
-              <span className="role">{ROLE}</span>
-            </div>
             <p>{BIO}</p>
             <p>{LINE}</p>
           </div>

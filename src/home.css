@@ -4,6 +4,7 @@
   --bg: #f6f6f6; --panel: #ffffff; --fg: #171717; --muted: #6f6f6f; --faint: #a1a1a1; --sel: #efefef; --rule: #e6e6e6;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 48px rgba(0, 0, 0, 0.09);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --c0: #d9482b; --c1: #b97a00; --c2: #2f9e4f; --c3: #1f7fd1; --c4: #6f4fd8; --c5: #cf3d93;
   position: relative; height: 100dvh; overflow: hidden; background: var(--bg); color: var(--fg);
   font: 400 18px/1.25 "Fanwood Text", "Iowan Old Style", Georgia, serif;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
@@ -13,6 +14,7 @@
   .hm {
     --bg: #111111; --panel: #1a1815; --fg: #eceae8; --muted: #96938e; --faint: #64615d; --sel: #252320; --rule: #2b2926;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 48px rgba(0, 0, 0, 0.55);
+    --c0: #ff6b4a; --c1: #f2b63c; --c2: #6fd08a; --c3: #55b6ff; --c4: #a58cff; --c5: #ff7ac0;
   }
   body:has(.hm) { background: #111111; }
 }
@@ -37,8 +39,17 @@
 
 .hm .home { padding: 36px 36px 12px; display: flex; flex-direction: column; gap: 16px; }
 .hm .home p { font-size: 20px; line-height: 1.2; max-width: 54ch; }
-.hm .who { display: flex; flex-direction: column; }
-.hm .role, .hm .kind, .hm .d { color: var(--muted); }
+.hm .kind, .hm .d { color: var(--muted); }
+
+/* The name band. Two identical halves slide left by exactly one half, so the loop has no seam. */
+.hm .marq { position: absolute; left: 0; right: 0; top: 0; height: 44px; z-index: 6; overflow: hidden; display: block; width: 100%;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent); }
+.hm .trk { display: inline-flex; white-space: nowrap; line-height: 44px; animation: hm-marq 130s linear infinite; will-change: transform; }
+.hm .trk span { margin-right: 46px; }
+.hm .marq:hover .trk { animation-play-state: paused; }
+.hm .c0 { color: var(--c0); } .hm .c1 { color: var(--c1); } .hm .c2 { color: var(--c2); }
+.hm .c3 { color: var(--c3); } .hm .c4 { color: var(--c4); } .hm .c5 { color: var(--c5); }
+@keyframes hm-marq { to { transform: translateX(-50%); } }
 .hm .n { color: var(--faint); white-space: nowrap; }
 /* A window's header is one button: clicking anywhere on it goes back. */
 .hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; flex: none; }
@@ -145,4 +156,4 @@
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
 @media (hover: none) { .hm .keys { display: none; } }
-@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc, .hm .swap { animation: none !important; } .hm .mk, .hm .pane.back .lst button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc, .hm .swap, .hm .trk { animation: none !important; } .hm .mk, .hm .pane.back .lst button { transition: none; } }
