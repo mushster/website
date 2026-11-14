@@ -30,7 +30,9 @@
 }
 .hm.boot .pane { transition: none; }
 .hm .in { display: flex; flex-direction: column; min-height: 0; flex: 1; transition: opacity 340ms ease-out 70ms; }
-.hm .pane.gone, .hm .pane.hid { opacity: 0; pointer-events: none; }
+.hm .pane.gone, .hm .pane.hid, .hm .pane.away { opacity: 0; pointer-events: none; }
+/* Only one list is ever open in the trail: while the folders are unfolded, the items step out quickly. */
+.hm .pane.away { transition-duration: 140ms; }
 .hm .pane.gone .in { opacity: 0; transition-delay: 0s; transition-duration: 160ms; }
 
 .hm .home { padding: 36px 36px 12px; display: flex; flex-direction: column; gap: 16px; }
