@@ -56,6 +56,29 @@ export function paneLayout(W, d) {
   return { w, left: left.map(Math.round) };
 }
 
+// Set REACT_APP_NOW_PLAYING_URL to the deployed worker (see worker/). Without it the strip never shows.
+const NOW_PLAYING_URL = process.env.REACT_APP_NOW_PLAYING_URL;
+
+function useNowPlaying() {
+  const [track, setTrack] = useState(null);
+  useEffect(() => {
+    if (!NOW_PLAYING_URL) return undefined;
+    let live = true;
+    const load = () =>
+      fetch(NOW_PLAYING_URL)
+        .then((r) => r.json())
+        .then((t) => live && setTrack(t.playing ? t : null))
+        .catch(() => live && setTrack(null));
+    load();
+    const id = setInterval(load, 30000);
+    return () => {
+      live = false;
+      clearInterval(id);
+    };
+  }, []);
+  return track;
+}
+
 const clamp = (v, n) => Math.max(0, Math.min(n - 1, v));
 
 export default function Home() {
@@ -71,6 +94,7 @@ export default function Home() {
   const first = useRef(null);
   const listBox = useRef(null);
   const openLink = useRef(null);
+  const track = useNowPlaying();
 
   useEffect(() => {
     fetch('/llms/posts.json')
@@ -160,7 +184,8 @@ export default function Home() {
     if (d && first.current.offsetHeight !== h0) setH0(first.current.offsetHeight);
   }, [d, h0, tree, W]);
 
-  const cardH = (j) => Math.min(j === 0 ? 600 : 520, H - (j === 0 ? 110 : 140));
+  // The landing window is taller only while the now-playing strip is showing.
+  const cardH = (j) => (j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
   const y = (j) => (j < d ? top + (j ? h0 + 4 : 0) : Math.round(H * 0.46 - cardH(j) / 2));
   const pane = (j) => ({
@@ -203,6 +228,24 @@ export default function Home() {
               ))}
             </div>
           </div>
+          {track && (
+            <a className="np" href={track.url} target="_blank" rel="noopener noreferrer" tabIndex={d === 0 ? 0 : -1} onClick={(e) => e.stopPropagation()}>
+              {track.cover ? <img className="cover" src={track.cover} alt="" /> : <span className="cover" />}
+              <span className="tx">
+                <span className="n">Listening now</span>
+                <span className="trk">
+                  <span>{track.title}</span>
+                  <span className="d">{track.artist}</span>
+                </span>
+              </span>
+              <span className="bars" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+            </a>
+          )}
         </div>
       </section>
 
