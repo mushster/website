@@ -25,7 +25,7 @@ const LEAD = (
 );
 
 const BOOKS = [
-  ["What's Good", 'https://www.goodreads.com/search?q=What%27s+Good'],
+  ["What's Good", 'https://www.goodreads.com/book/show/54776136-what-s-good'],
   ['How to Know a Person', 'https://www.goodreads.com/book/show/144407855-how-to-know-a-person'],
 ];
 const LINKS = [
