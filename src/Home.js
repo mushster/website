@@ -320,15 +320,9 @@ export default function Home() {
         <title>{NAME}</title>
       </Helmet>
 
-      {/* The name runs across the top as a slow band of color, the only color on the site. It also leads home. */}
-      <button type="button" className="marq" aria-label={`${NAME}, home`} onClick={closeFolder}>
-        <span className="trk" aria-hidden="true">
-          {Array.from({ length: 48 }, (_, n) => (
-            <span key={n} className={`c${n % 6}`}>
-              {NAME}
-            </span>
-          ))}
-        </span>
+      {/* The name sits once at the top left, in the only color on the site. It also leads home. */}
+      <button type="button" className="mark" onClick={closeFolder}>
+        {NAME}
       </button>
 
       <section {...pane(0)}>
