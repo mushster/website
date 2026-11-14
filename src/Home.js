@@ -23,7 +23,10 @@ const PROJECTS = [
 const Doc = lazy(() => import('./Doc'));
 
 // The third entry is the id of the notes file in public/book-notes, when there is one.
-const BOOKS = [["What's Good"], ['Why Men Love Bitches', 'Sherry Argov']];
+const BOOKS = [
+  ["What's Good", 'https://www.goodreads.com/search?q=What%27s+Good'],
+  ['Why Men Love Bitches', 'https://www.goodreads.com/book/show/46191.Why_Men_Love_Bitches'],
+];
 const LINKS = [
   ['X', 'https://x.com/aryanmusharaf'],
   ['Email', 'mailto:aryanmusharaf11@gmail.com'],
@@ -361,11 +364,8 @@ export default function Home() {
         },
         {
           t: 'Reading',
-          items: BOOKS.map(([t, a, notes]) => ({
-            t,
-            ...(a ? { meta: [['Author', a]] } : {}),
-            ...(notes ? { doc: `/book-notes/${notes}.md`, route: `/books/${notes}` } : {}),
-          })),
+          // direct: a book has nothing to show here, so its row goes straight to Goodreads.
+          items: BOOKS.map(([t, href]) => ({ t, href, direct: true })),
         },
         {
           t: 'Elsewhere',
