@@ -45,6 +45,8 @@ const LINKS = [
 const where = (href) => href.replace(/^(https?:\/\/(www\.)?|mailto:)/, '').replace(/\/$/, '');
 const WIDTHS = [640, 320, 680];
 const PHONE = 700;
+// Height of one row in the trail; home.css uses the same number.
+const ROW = 22;
 
 // Where each window sits across the page at depth d (0 landing, 1 list, 2 the page for one item).
 // The current one is centered; earlier ones shrink to one column of titles pinned to the left edge,
@@ -111,8 +113,11 @@ export default function Home() {
   const root = useRef(null);
   const first = useRef(null);
   const reader = useRef(null);
+  const list0 = useRef(null);
   // The trail row under the pointer, as [list, row]; its marker slides there and back to the current row.
   const [hov, setHov] = useState(null);
+  // Whether the pointer is over the top group of the trail, which unfolds it.
+  const [open0, setOpen0] = useState(false);
   const at = (list, current) => ({ '--at': hov && hov[0] === list ? hov[1] : current });
   const listBox = useRef(null);
   const openLink = useRef(null);
@@ -183,6 +188,9 @@ export default function Home() {
   const item = folder.items[shown.current.i] || folder.items[0];
   const reading = d === 2;
   const { w, left } = paneLayout(W, d);
+  // On a page the trail is a path: the folder list shows only your folder, until you point at it.
+  const folded = d === 2 && !open0;
+  const foldBy = (tree.length - 1) * ROW;
 
   const home = () => hit && nav('/');
   const openFolder = (n) => {
@@ -247,17 +255,22 @@ export default function Home() {
   }, [st, I]);
 
   useLayoutEffect(() => {
-    if (d && first.current.offsetHeight !== h0) setH0(first.current.offsetHeight);
+    // h0 is the unfolded height of the top group. Rows animate their height, so it is worked out from
+    // where the list starts plus a fixed height per row (10 = the list's bottom padding and the borders).
+    if (!d) return;
+    const h = list0.current.offsetTop + tree.length * ROW + 10;
+    if (h !== h0) setH0(h);
   }, [d, h0, tree, W]);
 
   // The landing window is taller only while the now-playing strip is showing.
   const tall = (j) => j === 2;
   const cardH = (j) => (tall(j) ? H : j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
-  const y = (j) => (j < d ? top + (j ? h0 + 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
+  const y = (j) => (j < d ? top + (j ? h0 - (folded ? foldBy : 0) + 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
   const pane = (j) => ({
     ref: j === 0 ? first : undefined,
-    className: `pane${tall(j) ? ' read' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
+    ...(j === 0 ? { onMouseEnter: () => setOpen0(true), onMouseLeave: () => setOpen0(false) } : {}),
+    className: `pane${j === 0 && folded ? ' fold' : ''}${tall(j) ? ' read' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
     'data-back': j < d ? d - j : 0,
     style: { width: w[j], height: j < d ? undefined : cardH(j), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
     onClick: (e) => {
@@ -285,7 +298,7 @@ export default function Home() {
             <p>{LINE}</p>
           </div>
           <div className="bd">
-            <div className="lst" style={at(0, S)} onMouseLeave={() => setHov(null)}>
+            <div className="lst" ref={list0} style={folded ? { '--at': 0 } : at(0, S)} onMouseLeave={() => setHov(null)}>
               <i className="mk" />
               {tree.map((f, n) => (
                 <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} onMouseEnter={() => setHov([0, n])} className={n === S ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={stop(() => openFolder(n))}>

@@ -79,7 +79,12 @@
 .hm .pane.back .lst::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--rule); }
 .hm .mk { display: none; }
 .hm .pane.back .mk { display: block; position: absolute; left: 0; top: 0; width: 1px; height: 22px; background: var(--fg); transform: translateY(calc(var(--at) * 22px)); transition: transform 260ms var(--ease); }
-.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; line-height: 20px; padding: 1px 12px; transition: color 140ms ease-out, transform 220ms var(--ease); }
+.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; line-height: 20px; height: 22px; padding: 1px 12px; overflow: hidden; transition: color 140ms ease-out, transform 220ms var(--ease), height 480ms var(--ease), padding 480ms var(--ease), opacity 260ms ease-out; }
+/* On a page the trail is a path: the other folders fold away until you point at the group, and the
+   list below drops its heading because the folded row already names the folder. */
+.hm .pane.fold .lst button:not(.on) { height: 0; padding-block: 0; opacity: 0; pointer-events: none; }
+.hm .pane.back:nth-of-type(2) .hd { display: none; }
+.hm .pane.back:nth-of-type(2) .in { padding-top: 6px; }
 .hm .pane.back .lst button:hover { color: var(--fg); transform: translateX(3px); }
 .hm .pane.back .lst button:active { transform: translateX(3px) scale(0.97); transition-duration: 80ms; }
 .hm .pane.back h1, .hm .pane.back h2 { transition: color 140ms ease-out; }
