@@ -5,18 +5,5 @@
     "summary": "Simple things you can keep doing over and over",
     "lastUpdated": "2026-11-13",
     "airy": true
-  },
-  {
-    "id": "emotions-are-tools",
-    "title": "Emotions are tools",
-    "summary": "Pick them up when you need them, and put them down before they pick you up",
-    "lastUpdated": "2026-11-13",
-    "cover": "/llms/covers/emotions-are-tools.jpg"
-  },
-  {
-    "id": "star-wars",
-    "title": "Star Wars",
-    "summary": "A galaxy far, far away that shaped my childhood",
-    "lastUpdated": "2026-01-07"
   }
 ]

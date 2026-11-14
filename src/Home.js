@@ -7,7 +7,6 @@ import './home.css';
 const NAME = 'Aryan Musharaf';
 const LEAD = 'I do engineering things at Hanover Park.';
 const BEFORE = 'Before that I studied computer science at Georgia Tech, where I worked on machine learning for biology and on decision making for autonomous robots.';
-const LINE = "Broadly, I'm interested in reasoning about the world around us.";
 const PAST = 'In the past I have worked on partner integrations at Box, and on decision making for autonomous robots with Ye Zhao.';
 const NOT_WORK = [
   "I try to spend a lot of my free time reading. I think most questions you could have in life have been asked and answered many times before, and I try to find answers of my own whether it's in history books, biographies, fiction, or even academic papers/textbooks.",
@@ -344,7 +343,7 @@ export default function Home() {
         {
           t: 'About',
           items: [
-            { t: 'Work', body: [LEAD, BEFORE, PAST, LINE] },
+            { t: 'Work', body: [LEAD, BEFORE, PAST] },
             { t: 'Not work', body: NOT_WORK },
             // airy: separate notes, one paragraph each, so they get more room between them than running prose.
             { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me', airy: true },
