@@ -79,8 +79,12 @@
 .hm .pane.back .lst { gap: 0; position: relative; }
 .hm .pane.back .lst::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--rule); }
 .hm .mk { display: none; }
-.hm .pane.back .mk { display: block; position: absolute; left: 0; top: 0; width: 1px; height: 22px; background: var(--fg); transform: translateY(calc(var(--at) * 22px)); transition: transform 300ms var(--ease); }
+.hm .pane.back .mk { display: block; position: absolute; left: 0; top: 0; width: 1px; height: var(--row, 22px); background: var(--fg); transform: translateY(calc(var(--at) * var(--row, 22px))); transition: transform 300ms var(--ease); }
 .hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; line-height: 20px; height: 22px; padding: 1px 12px; overflow: hidden; transition: color 140ms ease-out, transform 220ms var(--ease), height 540ms var(--ease), padding 540ms var(--ease), opacity 260ms ease-out; }
+/* The top group (your name and the folder) is a size up and never dimmed, so it reads as the level above. */
+.hm .pane.back:first-of-type { --row: 24px; }
+.hm .pane.back:first-of-type h1 { font-size: 18px; color: var(--fg); }
+.hm .pane.back:first-of-type .lst button { font-size: 18px; line-height: 22px; height: 24px; }
 /* On a page the trail is a path: the other folders fold away until you point at the group, and the
    list below drops its heading because the folded row already names the folder. */
 .hm .pane.fold .lst button:not(.on) { height: 0; padding-block: 0; opacity: 0; pointer-events: none; }
@@ -92,8 +96,6 @@
 .hm .pane.back h1:hover, .hm .pane.back .hd:hover h2 { color: var(--fg); }
 .hm .pane.back .lst .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .pane.back .lst button.on { color: var(--fg); }
-.hm .pane[data-back="2"] .in { opacity: 0.55; transition-delay: 0s; transition-duration: 180ms; }
-.hm .pane[data-back="2"]:hover .in { opacity: 1; }
 
 .hm .meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 20px; font-size: 17px; padding-top: 14px; border-top: 1px solid var(--rule); }
 .hm .meta dt { color: var(--muted); }

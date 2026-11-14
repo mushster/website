@@ -45,8 +45,8 @@ const LINKS = [
 const where = (href) => href.replace(/^(https?:\/\/(www\.)?|mailto:)/, '').replace(/\/$/, '');
 const WIDTHS = [640, 320, 680];
 const PHONE = 700;
-// Height of one row in the trail; home.css uses the same number.
-const ROW = 22;
+// Height of one row in the trail's top group; home.css sets the same number as --row.
+const ROW = 24;
 
 // Where each window sits across the page at depth d (0 landing, 1 list, 2 the page for one item).
 // The current one is centered; earlier ones shrink to one column of titles pinned to the left edge,
@@ -54,7 +54,7 @@ const ROW = 22;
 export function paneLayout(W, d) {
   const M = 16;
   const G = 16;
-  const bw = Math.max(84, Math.min(150, W * 0.25 - M - G));
+  const bw = Math.max(84, Math.min(180, W * 0.25 - M - G));
   const trail = d ? bw + G : 0;
   const room = W - 2 * M - (W >= PHONE ? trail : 0);
   const w = WIDTHS.map((x, j) => Math.min(j < d ? bw : x, j === d ? room : W - 2 * M));
