@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Home as HomeIcon } from 'lucide-react';
 import './home.css';
 
 const NAME = 'Aryan Musharaf';
@@ -91,22 +91,58 @@ function useNowPlaying() {
 // A number in [0, 1) from the browser's cryptographic random source, not the predictable Math.random.
 const rand = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
 
-// One crossing of a W by H page for a label of size w by h: it starts just outside one edge, ends just
-// outside a different edge, and bends through two random points on the way (a cubic curve). Given a
-// start point, it sets off from there instead of from an edge. Every
-// number comes from rand(), about 256 random bits per crossing, so no two crossings are alike.
-// Returns keyframes spaced by distance travelled, so the label moves at a steady speed.
-export function crossing(W, H, w, h, start) {
-  const onEdge = (e) => [[-w, rand() * (H - h)], [W, rand() * (H - h)], [rand() * (W - w), -h], [rand() * (W - w), H]][e];
-  const from = Math.floor(rand() * 4);
-  const to = (from + 1 + Math.floor(rand() * 3)) % 4;
-  const p = [start || onEdge(from), [rand() * W, rand() * H], [rand() * W, rand() * H], onEdge(to)];
-  const at = (t) => [0, 1].map((k) => (1 - t) ** 3 * p[0][k] + 3 * (1 - t) ** 2 * t * p[1][k] + 3 * (1 - t) * t ** 2 * p[2][k] + t ** 3 * p[3][k]);
-  const pts = Array.from({ length: 49 }, (_, n) => at(n / 48));
-  let length = 0;
-  const travelled = pts.map((q, n) => (n ? (length += Math.hypot(q[0] - pts[n - 1][0], q[1] - pts[n - 1][1])) : 0));
-  const frames = pts.map((q, n) => ({ transform: `translate(${q[0].toFixed(1)}px, ${q[1].toFixed(1)}px)`, offset: n === 48 ? 1 : travelled[n] / length }));
-  return { length, frames };
+// The name bounces around inside the page like the old DVD logo, and it is never allowed into a corner.
+// CORNER is the size of the square at each corner that its top-left position must stay out of.
+export const CORNER = 44;
+// The check uses a slightly larger square than CORNER, because a line is tested at points 5px apart
+// and must not be able to slip a sliver of the real square between two of them.
+const KEEP_OUT = CORNER + 6;
+const inCorner = (x, y, maxX, maxY) => (x < KEEP_OUT || x > maxX - KEEP_OUT) && (y < KEEP_OUT || y > maxY - KEEP_OUT);
+const turn = ([dx, dy], a) => [dx * Math.cos(a) - dy * Math.sin(a), dx * Math.sin(a) + dy * Math.cos(a)];
+// Keeps a heading from running nearly parallel to a wall, and makes it a unit vector.
+const steady = ([dx, dy]) => {
+  const lift = (v) => (v < 0 ? -1 : 1) * Math.max(0.3, Math.abs(v));
+  const a = lift(dx);
+  const b = lift(dy);
+  return [a / Math.hypot(a, b), b / Math.hypot(a, b)];
+};
+
+// One straight leg for a label of size w by h on a W by H page: from `from`, along `heading`, to the
+// first wall. If that line would pass through a corner square, the heading is turned until it does not.
+// The heading for the next leg is the bounce off that wall, nudged by a random few degrees, so the
+// path never settles into a loop and no two visits trace the same one.
+export function leg(W, H, w, h, from, heading) {
+  const maxX = Math.max(2 * KEEP_OUT + 2, W - w);
+  const maxY = Math.max(2 * KEEP_OUT + 2, H - h);
+  const x = Math.min(Math.max(from[0], 0), maxX);
+  const y = Math.min(Math.max(from[1], 0), maxY);
+  // From a wall, a heading has to point back into the page.
+  const inward = ([dx, dy]) => [x <= 0 ? Math.abs(dx) : x >= maxX ? -Math.abs(dx) : dx, y <= 0 ? Math.abs(dy) : y >= maxY ? -Math.abs(dy) : dy];
+  const reach = ([dx, dy]) => Math.min(dx > 0 ? (maxX - x) / dx : -x / dx, dy > 0 ? (maxY - y) / dy : -y / dy);
+  // Does the line enter a corner square? A start inside one (you can drop the name there) is let out first.
+  const clips = (d, t) => {
+    let out = !inCorner(x, y, maxX, maxY);
+    for (let step = 0; ; step += 5) {
+      const at = Math.min(step, t);
+      const hit = inCorner(x + d[0] * at, y + d[1] * at, maxX, maxY);
+      if (out && hit) return true;
+      if (!hit) out = true;
+      if (at === t) return false;
+    }
+  };
+  const pointsIn = ([dx, dy]) => (x <= 0 ? dx > 0 : x >= maxX ? dx < 0 : true) && (y <= 0 ? dy > 0 : y >= maxY ? dy < 0 : true);
+  const base = steady(inward(steady(heading)));
+  let dir = base;
+  let t = reach(dir);
+  // Fan out either side of the intended heading, a little further each time, until a line is clear.
+  // The fan covers the full circle, and a clear line into the page always exists.
+  for (let k = 1; k < 200 && (!pointsIn(dir) || clips(dir, t)); k++) {
+    dir = steady(turn(base, (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.07));
+    t = reach(dir);
+  }
+  const to = [x + dir[0] * t, y + dir[1] * t];
+  const bounced = [to[0] < 0.01 || to[0] > maxX - 0.01 ? -dir[0] : dir[0], to[1] < 0.01 || to[1] > maxY - 0.01 ? -dir[1] : dir[1]];
+  return { from: [x, y], to, length: t, heading: steady(turn(bounced, (rand() - 0.5) * 0.35)) };
 }
 
 // Follows a link the way a click on it would.
@@ -205,18 +241,34 @@ export default function Home() {
         return null;
       }
     };
-    // entering: the first crossing after the page loads. It begins with most of the name already past
-    // the edge, so the name is seen sliding in straight away instead of after a wait off screen.
-    // from: start the path here instead of at an edge.
-    const go = (entering, from) => {
+    // One speed for the whole visit, like the DVD logo.
+    const speed = 34 + rand() * 14;
+    let heading = turn([1, 0], rand() * Math.PI * 2);
+    // from: where to set off from. Without it the name carries on from the end of the last leg.
+    let last = null;
+    const go = (from) => {
       if (!live || still || pinned) return;
       if (anim) anim.cancel();
       const [W, H] = size();
-      const { length, frames } = crossing(W, H, el.offsetWidth, el.offsetHeight, from);
-      const duration = (length / (30 + rand() * 20)) * 1000;
-      anim = el.animate(frames, { duration, easing: 'linear', fill: 'both' });
-      if (entering) anim.currentTime = duration * Math.min(0.5, (0.7 * el.offsetWidth) / length);
-      anim.onfinish = () => go(false);
+      const next = leg(W, H, el.offsetWidth, el.offsetHeight, from || last, heading);
+      heading = next.heading;
+      last = next.to;
+      const at = ([x, y]) => ({ transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)` });
+      anim = el.animate([at(next.from), at(next.to)], { duration: Math.max(1, (next.length / speed) * 1000), easing: 'linear', fill: 'both' });
+      anim.onfinish = () => go();
+    };
+    // On arrival the name is already on the page, somewhere in the open, clear of the corners and of
+    // the middle where the landing window sits.
+    const opening = () => {
+      const [W, H] = size();
+      const maxX = W - el.offsetWidth;
+      const maxY = H - el.offsetHeight;
+      for (let k = 0; ; k++) {
+        const x = rand() * maxX;
+        const y = rand() * maxY;
+        const middle = Math.abs(x + el.offsetWidth / 2 - W / 2) < 340 + el.offsetWidth / 2 && Math.abs(y - H * 0.46) < 320;
+        if (k > 60 || (!middle && !inCorner(x, y, maxX, maxY))) return [x, y];
+      }
     };
     // The spot is stored as fractions of the page, so it survives a resize and a reload.
     const restore = () => {
@@ -227,7 +279,7 @@ export default function Home() {
       return true;
     };
     pinned = restore();
-    go(true);
+    go(opening());
 
     const down = (e) => {
       const [x, y] = where();
@@ -271,7 +323,7 @@ export default function Home() {
       try {
         localStorage.removeItem('name-at');
       } catch {}
-      go(false, where());
+      go(where());
     };
     const pause = () => anim && anim.pause();
     const play = () => anim && !grab && anim.play();
@@ -461,9 +513,9 @@ export default function Home() {
         <title>{NAME}</title>
       </Helmet>
 
-      {/* The name drifts across the page behind everything else, on a path that is drawn fresh for every
-          crossing. You can drag it and drop it anywhere, where it stays until you double-click it.
-          A single click leads home. */}
+      {/* The name bounces around the page behind everything else, never leaving the screen and never
+          reaching a corner. You can drag it and drop it anywhere, where it stays until you double-click
+          it. A single click leads home. */}
       <button
         type="button"
         className="mark"
@@ -485,6 +537,11 @@ export default function Home() {
         }}
       >
         {NAME}
+      </button>
+
+      {/* The way back to the landing window, shown at the top left whenever you are not already on it. */}
+      <button type="button" className={`hb${d ? '' : ' off'}`} aria-label="Home" tabIndex={d ? 0 : -1} onClick={closeFolder}>
+        <HomeIcon size={17} strokeWidth={1.5} aria-hidden="true" />
       </button>
 
       <section {...pane(0)}>

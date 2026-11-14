@@ -45,8 +45,8 @@
 .hm .home p { font-size: 20px; line-height: 1.2; max-width: 54ch; }
 .hm .kind, .hm .d { color: var(--muted); }
 
-/* The name: one muted clay tone, the only color on the site. It drifts across the page behind the
-   windows and text; Home.js draws a new path for every crossing. Until the first path starts, and
+/* The name: one muted clay tone, the only color on the site. It bounces around the page behind
+   the windows and text; Home.js works out each leg of the bounce. Until the first path starts, and
    for visitors who ask for reduced motion, it rests at the top left. */
 .hm .mark { position: absolute; left: 0; top: 0; z-index: 0; color: var(--name); letter-spacing: 0.34em; white-space: nowrap; transform: translate(17px, 18px); will-change: transform; }
 /* In the open the name is plain, with no glow of its own. It disappears while you read a page. */
@@ -54,6 +54,11 @@
 .hm .mark.held { cursor: grabbing; }
 .hm.reading .mark { opacity: 0; pointer-events: none; }
 .hm .n { color: var(--faint); white-space: nowrap; }
+/* Home: a small mark at the top left, on every view except the landing window itself. */
+.hm .hb { position: absolute; left: 11px; top: 12px; z-index: 6; display: inline-flex; padding: 7px; border-radius: 8px; color: var(--faint); transition: opacity 260ms ease-out, color 120ms ease-out, background 120ms ease-out, transform 120ms var(--ease); }
+.hm .hb:hover { color: var(--fg); background: var(--sel); }
+.hm .hb:active { transform: scale(0.94); }
+.hm .hb.off { opacity: 0; pointer-events: none; }
 /* A window's header is one button: clicking anywhere on it goes back. */
 .hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; flex: none; }
 .hm .hd .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 140ms ease-out; }
