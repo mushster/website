@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkmushy_site=self.webpackChunkmushy_site||[]).push([[802],{802(e,t,s){s.r(t),s.d(t,{default:()=>n});var u=s(43),c=s(257),h=s(579);function n(e){let{src:t}=e;const[s,n]=(0,u.useState)("");return(0,u.useEffect)(()=>{let e=!0;return n(""),fetch(t).then(e=>e.text()).then(t=>e&&n(t)).catch(()=>{}),()=>{e=!1}},[t]),(0,h.jsx)(c.o,{children:s})}}}]);
+//# sourceMappingURL=802.ad257675.chunk.js.map
