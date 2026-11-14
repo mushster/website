@@ -24,17 +24,7 @@ const PROJECTS = [
 const Doc = lazy(() => import('./Doc'));
 
 // The third entry is the id of the notes file in public/book-notes, when there is one.
-const BOOKS = [
-  ['The Beginning of Infinity', 'David Deutsch', 'beginning-of-infinity'],
-  ['Gödel, Escher, Bach', 'Douglas Hofstadter'],
-  ['Superintelligence: Paths, Dangers, Strategies', 'Nick Bostrom'],
-  ['What is Life?', 'Erwin Schrödinger'],
-  ['Structure and Interpretation of Computer Programs', 'Abelson & Sussman'],
-  ['Code: The Hidden Language of Computer Hardware and Software', 'Charles Petzold'],
-  ['Programming Pearls', 'Jon Bentley'],
-  ['The Glass Bead Game', 'Hermann Hesse'],
-  ['Collected Fictions', 'Jorge Luis Borges'],
-];
+const BOOKS = [["What's Good"], ['Why Men Love Bitches', 'Sherry Argov']];
 const LINKS = [
   ['X', 'https://x.com/aryanmusharaf'],
   ['Email', 'mailto:aryanmusharaf11@gmail.com'],
@@ -374,7 +364,7 @@ export default function Home() {
           t: 'Reading',
           items: BOOKS.map(([t, a, notes]) => ({
             t,
-            meta: [['Author', a]],
+            ...(a ? { meta: [['Author', a]] } : {}),
             ...(notes ? { doc: `/book-notes/${notes}.md`, route: `/books/${notes}` } : {}),
           })),
         },
