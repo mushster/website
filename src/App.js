@@ -16,7 +16,7 @@ function App() {
           <Route path="/books/:bookId" element={<Home />} />
           <Route path="/llms" element={<LLMsHome />} />
           <Route path="/llms/:postId" element={<Home />} />
-          <Route path="/notes-to-myself" element={<Home />} />
+          <Route path="/notes-to-me" element={<Home />} />
         </Routes>
       </Suspense>
     </HashRouter>

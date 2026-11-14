@@ -165,7 +165,7 @@ export default function Home() {
           items: [
             { t: 'Work', body: [BIO, PAST] },
             { t: 'Not work', body: NOT_WORK },
-            { t: 'Notes to myself', doc: '/notes-to-myself.md', route: '/notes-to-myself' },
+            { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me' },
           ],
         },
         {

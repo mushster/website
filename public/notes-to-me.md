@@ -1,3 +1,3 @@
-# Notes to myself
+# Notes to me
 
 Nothing here yet.
