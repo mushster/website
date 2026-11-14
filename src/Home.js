@@ -310,19 +310,18 @@ export default function Home() {
         },
         {
           t: 'Projects',
-          items: PROJECTS.map(([t, d, href, kind]) => ({ t, d, body: [d + '.'], href, meta: [['Kind', kind], ['Where', where(href)]] })),
+          items: PROJECTS.map(([t, d, href, kind]) => ({ t, body: [d + '.'], href, meta: [['Kind', kind], ['Where', where(href)]] })),
         },
         {
           t: 'Writing',
-          // Optional per post in posts.json. cover: an image that heads the essay and marks its row.
+          // Optional per post in posts.json. cover: an image that heads the essay.
           // airy: the post is a list of short separate lines, so they get more room between them.
-          items: posts.map((p) => ({ t: p.title, d: p.summary, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}`, cover: p.cover, airy: p.airy })),
+          items: posts.map((p) => ({ t: p.title, doc: `/llms/${p.id}.md`, route: `/llms/${p.id}`, cover: p.cover, airy: p.airy })),
         },
         {
           t: 'Reading',
           items: BOOKS.map(([t, a, notes]) => ({
             t,
-            d: notes ? `${a} · notes` : a,
             meta: [['Author', a]],
             ...(notes ? { doc: `/book-notes/${notes}.md`, route: `/books/${notes}` } : {}),
           })),
@@ -330,7 +329,7 @@ export default function Home() {
         {
           t: 'Elsewhere',
           // direct: these rows have nothing to show, so clicking one goes straight to its link.
-          items: LINKS.map(([t, href]) => ({ t, d: where(href), href, direct: true })),
+          items: LINKS.map(([t, href]) => ({ t, href, direct: true })),
         },
       ].filter((f) => f.items.length),
     [posts]
@@ -539,12 +538,10 @@ export default function Home() {
               <i className="mk" />
               {folder.items.map((it, n) => (
                 <div className="rw" key={it.t} onMouseEnter={() => setHov(n)}>
-                  <button type="button" tabIndex={d === 1 ? 0 : -1} className={`two ${n === I ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''}`} onClick={stop(() => openItem(n))}>
+                  <button type="button" tabIndex={d === 1 ? 0 : -1} className={n === I ? 'on' : d === 1 && n === st.c1 ? 'cur' : ''} onClick={stop(() => openItem(n))}>
                     <span className="t">{it.t}</span>
-                    {it.d && <span className="d">{it.d}</span>}
                   </button>
                   {it.href && <Out href={it.href} label={it.t} tabIndex={d === 1 ? 0 : -1} />}
-                  {it.cover && <img className="thumb" src={it.cover} alt="" />}
                 </div>
               ))}
             </div>
