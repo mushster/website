@@ -306,6 +306,7 @@ export default function Home() {
             { t: 'Not work', body: NOT_WORK },
             // airy: separate notes, one paragraph each, so they get more room between them than running prose.
             { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me', airy: true },
+            { t: 'Superpowers', doc: '/superpowers.md', route: '/superpowers', airy: true },
           ],
         },
         {
