@@ -43,7 +43,7 @@ const LINKS = [
 ];
 
 const where = (href) => href.replace(/^(https?:\/\/(www\.)?|mailto:)/, '').replace(/\/$/, '');
-const WIDTHS = [640, 320, 680];
+const WIDTHS = [640, 520, 680];
 const PHONE = 700;
 // Height of one row in the trail's top group; home.css sets the same number as --row.
 const ROW = 24;
@@ -270,7 +270,8 @@ export default function Home() {
 
   // The landing window is taller only while the now-playing strip is showing.
   const tall = (j) => j === 2;
-  const cardH = (j) => (tall(j) ? H : j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
+  // Every list window is the same size, wider than it is tall; long lists scroll inside it.
+  const cardH = (j) => (tall(j) ? H : j === 1 ? Math.min(420, H - 140) : track ? Math.min(600, H - 110) : Math.min(520, H - 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
   // On a page the folder list is shifted up so your folder sits on the top line. The other folders keep
   // their places in the layout; folding slides each one (--dy) onto your folder's row as it fades, and
@@ -283,8 +284,7 @@ export default function Home() {
     ...(j === 0 ? { onMouseLeave: () => unfold(false) } : {}),
     className: `pane${j === 0 && folded ? ' fold' : ''}${j === 1 && d === 2 && open0 ? ' away' : ''}${tall(j) ? ' read' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
     'data-back': j < d ? d - j : 0,
-    // The list window is only as tall as its rows, up to the usual window height; longer lists scroll.
-    style: { width: w[j], ...(j === 1 ? { maxHeight: cardH(1) } : { height: j < d ? undefined : cardH(j) }), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
+    style: { width: w[j], height: j < d ? undefined : cardH(j), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
     onClick: (e) => {
       if (j < d && !e.target.closest('a')) (j === 0 ? closeFolder : closeItem)();
     },
