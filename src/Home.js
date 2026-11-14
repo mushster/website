@@ -5,8 +5,8 @@ import { ExternalLink, Home as HomeIcon } from 'lucide-react';
 import './home.css';
 
 const NAME = 'Aryan Musharaf';
-const BIO =
-  'I build accounting software for investment funds at Hanover. Before that I studied computer science at Georgia Tech, where I worked on machine learning for biology and on decision making for autonomous robots.';
+const LEAD = 'I do engineering things at Hanover Park.';
+const BEFORE = 'Before that I studied computer science at Georgia Tech, where I worked on machine learning for biology and on decision making for autonomous robots.';
 const LINE = "Broadly, I'm interested in reasoning about the world around us.";
 const PAST = 'In the past I have worked on partner integrations at Box, and on decision making for autonomous robots with Ye Zhao.';
 const NOT_WORK = [
@@ -354,7 +354,7 @@ export default function Home() {
         {
           t: 'About',
           items: [
-            { t: 'Work', body: [BIO, PAST] },
+            { t: 'Work', body: [LEAD, BEFORE, PAST] },
             { t: 'Not work', body: NOT_WORK },
             // airy: separate notes, one paragraph each, so they get more room between them than running prose.
             { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me', airy: true },
@@ -547,7 +547,8 @@ export default function Home() {
       <section {...pane(0)}>
         <div className="in">
           <div className="home">
-            <p>{BIO}</p>
+            <p>{LEAD}</p>
+            <p>{BEFORE}</p>
             <p>{LINE}</p>
           </div>
           <div className="bd">
