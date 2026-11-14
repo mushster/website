@@ -116,6 +116,7 @@
 .hm .pane.read .hd { padding: 0 0 18px; margin-left: -6px; align-self: flex-start; }
 .hm .doc { font-size: 20px; line-height: 1.42; overflow-wrap: break-word; }
 .hm .doc > * + * { margin-top: 0.85em; }
+.hm .doc.airy > * + * { margin-top: 1.6em; }
 .hm .doc h1 { font-size: 27px; line-height: 1.15; }
 .hm .doc h2 { font-size: 22px; line-height: 1.2; margin-top: 1.7em; }
 .hm .doc h3 { font-size: 20px; font-style: italic; margin-top: 1.4em; }

@@ -165,7 +165,8 @@ export default function Home() {
           items: [
             { t: 'Work', body: [BIO, PAST] },
             { t: 'Not work', body: NOT_WORK },
-            { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me' },
+            // airy: separate notes, one paragraph each, so they get more room between them than running prose.
+            { t: 'Notes to me', doc: '/notes-to-me.md', route: '/notes-to-me', airy: true },
           ],
         },
         {
@@ -395,7 +396,7 @@ export default function Home() {
             </span>
             <span className="ttl kind">{folder.t}</span>
           </button>
-          <article className="doc" key={item.t}>
+          <article className={`doc${item.airy ? ' airy' : ''}`} key={item.t}>
             {item.doc ? (
               <Suspense fallback={null}>
                 <Doc src={item.doc} />
