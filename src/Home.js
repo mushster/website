@@ -173,8 +173,6 @@ export default function Home() {
   const list0 = useRef(null);
   const mark = useRef(null);
   const dragged = useRef(false);
-  const letGo = useRef(null);
-  const homeTimer = useRef(0);
   const swapFrom = useRef(0);
   const swapDir = useRef(1);
   // The item row under the pointer in the trail; the rail's marker slides there and back to the current item.
@@ -214,8 +212,6 @@ export default function Home() {
     const still = !el.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let anim = null;
     let live = true;
-    // pinned: you dropped the name somewhere, so it stays there and stops drifting.
-    let pinned = false;
     let grab = null;
     const size = () => [root.current.clientWidth, root.current.clientHeight];
     const place = (x, y) => {
@@ -226,20 +222,13 @@ export default function Home() {
       const b = root.current.getBoundingClientRect();
       return [a.left - b.left, a.top - b.top];
     };
-    const saved = () => {
-      try {
-        return JSON.parse(localStorage.getItem('name-at'));
-      } catch {
-        return null;
-      }
-    };
     // One speed for the whole visit, like the DVD logo.
     const speed = 34 + rand() * 14;
     let heading = turn([1, 0], rand() * Math.PI * 2);
     // from: where to set off from. Without it the name carries on from the end of the last leg.
     let last = null;
     const go = (from) => {
-      if (!live || still || pinned) return;
+      if (!live || still) return;
       if (anim) anim.cancel();
       const [W, H] = size();
       const next = leg(W, H, el.offsetWidth, el.offsetHeight, from || last, heading);
@@ -262,15 +251,6 @@ export default function Home() {
         if (k > 60 || (!middle && !inCorner(x, y, maxX, maxY))) return [x, y];
       }
     };
-    // The spot is stored as fractions of the page, so it survives a resize and a reload.
-    const restore = () => {
-      const at = saved();
-      if (!at) return false;
-      const [W, H] = size();
-      place(at[0] * W, at[1] * H);
-      return true;
-    };
-    pinned = restore();
     go(opening());
 
     const down = (e) => {
@@ -297,36 +277,21 @@ export default function Home() {
     const up = () => {
       if (!grab) return;
       if (grab.moved) {
-        const [x, y] = where();
-        const [W, H] = size();
-        pinned = true;
+        // Let go and it sets off again from where you dropped it.
         dragged.current = true;
         el.classList.remove('held');
-        try {
-          localStorage.setItem('name-at', JSON.stringify([x / W, y / H]));
-        } catch {}
+        go(where());
       } else if (anim) anim.play();
       grab = null;
     };
-    // Double-click lets it go: it drifts off again from wherever it was resting.
-    letGo.current = () => {
-      if (!pinned) return;
-      pinned = false;
-      try {
-        localStorage.removeItem('name-at');
-      } catch {}
-      go(where());
-    };
     const pause = () => anim && anim.pause();
     const play = () => anim && !grab && anim.play();
-    const resize = () => pinned && restore();
     el.addEventListener('pointerdown', down);
     el.addEventListener('pointermove', move);
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', up);
     el.addEventListener('mouseenter', pause);
     el.addEventListener('mouseleave', play);
-    window.addEventListener('resize', resize);
     return () => {
       live = false;
       if (anim) anim.cancel();
@@ -336,7 +301,6 @@ export default function Home() {
       el.removeEventListener('pointercancel', up);
       el.removeEventListener('mouseenter', pause);
       el.removeEventListener('mouseleave', play);
-      window.removeEventListener('resize', resize);
     };
   }, []);
 
@@ -507,18 +471,12 @@ export default function Home() {
         ref={mark}
         aria-label={`${NAME}, home`}
         onClick={(e) => {
-          // The click that ends a drag is not a click. A single click goes home, after a beat so that
-          // a double-click (which lets the name go) does not also navigate.
+          // The click that ends a drag is not a click. Any other click goes home.
           if (dragged.current) {
             dragged.current = false;
             return;
           }
-          clearTimeout(homeTimer.current);
-          if (e.detail <= 1) homeTimer.current = setTimeout(closeFolder, e.detail ? 230 : 0);
-        }}
-        onDoubleClick={() => {
-          clearTimeout(homeTimer.current);
-          letGo.current();
+          closeFolder();
         }}
       >
         {NAME}
