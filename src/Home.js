@@ -42,19 +42,20 @@ const WIDTHS = [640, 320, 460];
 const PHONE = 700;
 
 // Where each window sits at depth d (0 landing, 1 list, 2 item). The current one is centered;
-// earlier ones shrink to title columns that share the left quarter of the screen.
+// earlier ones shrink to title columns pinned to the left edge, sharing at most a quarter of the width.
 export function paneLayout(W, d) {
   const M = 16;
   const G = 16;
-  const bw = Math.max(84, Math.min(170, (W * 0.25 - M) / Math.max(d, 1) - G));
+  const bw = Math.max(84, Math.min(150, (W * 0.25 - M) / Math.max(d, 1) - G));
   const w = WIDTHS.map((x, j) => Math.min(j < d ? bw : x, W - 2 * M));
   const left = [];
   const trail = w.slice(0, d).reduce((a, x) => a + x + G, 0);
   left[d] = Math.min(Math.max((W - w[d]) / 2, M + trail), W - M - w[d]);
+  // On a narrow screen the columns overlap evenly rather than push the current window off screen.
   const k = !d || left[d] - trail >= M ? 1 : (left[d] - M) / trail;
-  for (let j = d - 1, x = left[d]; j >= 0; j--) {
-    x -= (w[j] + G) * k;
+  for (let j = 0, x = M; j < d; j++) {
     left[j] = x;
+    x += (w[j] + G) * k;
   }
   for (let j = d + 1; j < 3; j++) left[j] = left[j - 1] + w[j - 1] + G + (j === d + 1 ? 40 : 0);
   return { w, left: left.map(Math.round) };
@@ -192,7 +193,6 @@ export default function Home() {
               {tree.map((f, n) => (
                 <button type="button" tabIndex={d === 0 ? 0 : -1} key={f.t} className={n === st.s ? 'on' : d === 0 && n === st.c0 ? 'cur' : ''} onClick={pick({ s: n, c0: n, i: -1, c1: 0 })}>
                   <span className="t">{f.t}</span>
-                  <span className="n">{f.items.length}</span>
                 </button>
               ))}
             </div>

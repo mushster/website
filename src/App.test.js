@@ -8,6 +8,7 @@ test('the current window stays on screen and the trail is at most a quarter of t
       expect(left[d] + w[d]).toBeLessThanOrEqual(W - 16);
       const trail = w.slice(0, d).reduce((sum, x) => sum + x + 16, 0);
       if (W >= 900) expect(trail).toBeLessThanOrEqual(W * 0.25);
+      if (d) expect(left[0]).toBe(16);
     }
   }
 });
