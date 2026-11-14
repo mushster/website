@@ -118,6 +118,13 @@ export default function Home() {
   const [hov, setHov] = useState(null);
   // Whether the pointer is over the top group of the trail, which unfolds it.
   const [open0, setOpen0] = useState(false);
+  const unfoldTimer = useRef(0);
+  // A short pause before unfolding, so the trail does not flap when the pointer only passes over it.
+  const unfold = (on) => {
+    clearTimeout(unfoldTimer.current);
+    if (on) unfoldTimer.current = setTimeout(() => setOpen0(true), 90);
+    else setOpen0(false);
+  };
   const at = (list, current) => ({ '--at': hov && hov[0] === list ? hov[1] : current });
   const listBox = useRef(null);
   const openLink = useRef(null);
@@ -266,10 +273,12 @@ export default function Home() {
   const tall = (j) => j === 2;
   const cardH = (j) => (tall(j) ? H : j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
   const top = Math.round(H * 0.46 - cardH(1) / 2);
-  const y = (j) => (j < d ? top + (j ? h0 - (folded ? foldBy : 0) + 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
+  // When the path unfolds, the whole trail shifts up so the folder you are pointing at stays under the pointer.
+  const lift = d === 2 && !folded ? S * ROW : 0;
+  const y = (j) => (j < d ? top - lift + (j ? h0 - (folded ? foldBy : 0) + 4 : 0) : Math.round(tall(j) ? 0 : H * 0.46 - cardH(j) / 2));
   const pane = (j) => ({
     ref: j === 0 ? first : undefined,
-    ...(j === 0 ? { onMouseEnter: () => setOpen0(true), onMouseLeave: () => setOpen0(false) } : {}),
+    ...(j === 0 ? { onMouseEnter: () => unfold(true), onMouseLeave: () => unfold(false) } : {}),
     className: `pane${j === 0 && folded ? ' fold' : ''}${tall(j) ? ' read' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
     'data-back': j < d ? d - j : 0,
     style: { width: w[j], height: j < d ? undefined : cardH(j), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
