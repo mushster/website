@@ -22,13 +22,12 @@
 .hm kbd { font: 400 14px/1 inherit; font-family: inherit; color: var(--muted); background: var(--sel); border-radius: 4px; padding: 3px 5px; min-width: 20px; text-align: center; display: inline-block; }
 
 .hm .pane {
-  position: absolute; left: 0; top: 46%; height: min(520px, calc(100% - 140px)); display: flex; flex-direction: column;
+  position: absolute; left: 0; top: 0; display: flex; flex-direction: column;
   background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow);
   transition: transform 480ms var(--ease), width 480ms var(--ease), height 480ms var(--ease), opacity 260ms ease-out, box-shadow 300ms ease-out, background-color 300ms ease-out, border-color 300ms ease-out;
   will-change: transform;
 }
 .hm.boot .pane { transition: none; }
-.hm .pane.has-np:not(.back) { height: min(600px, calc(100% - 110px)); }
 .hm .in { display: flex; flex-direction: column; min-height: 0; flex: 1; transition: opacity 340ms ease-out 70ms; }
 .hm .pane.gone, .hm .pane.hid { opacity: 0; pointer-events: none; }
 .hm .pane.gone .in { opacity: 0; transition-delay: 0s; transition-duration: 160ms; }
@@ -72,7 +71,7 @@
 .hm .pane.back { box-shadow: none; background: transparent; border-color: transparent; cursor: pointer; }
 .hm .pane.back .home p, .hm .pane.back .d, .hm .pane.back .bk, .hm .pane.back .n, .hm .pane.back .role { display: none; }
 .hm .pane.back .home { padding: 14px 12px 4px; }
-.hm .pane.back .hd { padding: 14px 12px 4px; }
+.hm .pane.back .hd { padding: 6px 12px 4px; }
 .hm .pane.back h1, .hm .pane.back h2 { color: var(--muted); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .pane.back .bd { padding-inline: 0; overflow: hidden; }
 .hm .pane.back .lst { gap: 0; }

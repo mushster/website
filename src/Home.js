@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import './home.css';
 
@@ -41,22 +41,17 @@ const where = (href) => href.replace(/^(https?:\/\/(www\.)?|mailto:)/, '').repla
 const WIDTHS = [640, 320, 460];
 const PHONE = 700;
 
-// Where each window sits at depth d (0 landing, 1 list, 2 item). The current one is centered;
-// earlier ones shrink to title columns pinned to the left edge, sharing at most a quarter of the width.
+// Where each window sits across the page at depth d (0 landing, 1 list, 2 item). The current one is
+// centered; earlier ones shrink to one column of titles pinned to the left edge, at most a quarter wide.
 export function paneLayout(W, d) {
   const M = 16;
   const G = 16;
-  const bw = Math.max(84, Math.min(150, (W * 0.25 - M) / Math.max(d, 1) - G));
+  const bw = Math.max(84, Math.min(150, W * 0.25 - M - G));
   const w = WIDTHS.map((x, j) => Math.min(j < d ? bw : x, W - 2 * M));
+  const trail = d ? bw + G : 0;
   const left = [];
-  const trail = w.slice(0, d).reduce((a, x) => a + x + G, 0);
+  for (let j = 0; j < d; j++) left[j] = M;
   left[d] = Math.min(Math.max((W - w[d]) / 2, M + trail), W - M - w[d]);
-  // On a narrow screen the columns overlap evenly rather than push the current window off screen.
-  const k = !d || left[d] - trail >= M ? 1 : (left[d] - M) / trail;
-  for (let j = 0, x = M; j < d; j++) {
-    left[j] = x;
-    x += (w[j] + G) * k;
-  }
   for (let j = d + 1; j < 3; j++) left[j] = left[j - 1] + w[j - 1] + G + (j === d + 1 ? 40 : 0);
   return { w, left: left.map(Math.round) };
 }
@@ -90,10 +85,13 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   // s: open folder, i: open item (-1 when closed); c0 and c1 are the keyboard cursors in each list.
   const [st, setSt] = useState({ s: -1, i: -1, c0: 0, c1: 0 });
-  const [W, setW] = useState(window.innerWidth);
+  const [{ W, H }, setSize] = useState({ W: window.innerWidth, H: window.innerHeight });
+  // Height of the landing window once it has shrunk to titles; the list's titles stack below it.
+  const [h0, setH0] = useState(0);
   const [ready, setReady] = useState(false);
   const shown = useRef({ s: 0, i: 0 });
   const root = useRef(null);
+  const first = useRef(null);
   const listBox = useRef(null);
   const openLink = useRef(null);
   const track = useNowPlaying();
@@ -104,7 +102,7 @@ export default function Home() {
       .then(setPosts)
       .catch(() => {});
     // Observe the element itself: it also catches a container that starts at zero width.
-    const ro = new ResizeObserver(([entry]) => setW(entry.contentRect.width));
+    const ro = new ResizeObserver(([entry]) => setSize({ W: entry.contentRect.width, H: entry.contentRect.height }));
     ro.observe(root.current);
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setReady(true)));
     return () => {
@@ -182,10 +180,19 @@ export default function Home() {
     else if (row.offsetTop + row.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = row.offsetTop + row.offsetHeight - box.clientHeight + 8;
   }, [st]);
 
+  useLayoutEffect(() => {
+    if (d && first.current.offsetHeight !== h0) setH0(first.current.offsetHeight);
+  });
+
+  // The landing window is taller only while the now-playing strip is showing.
+  const cardH = (j) => (j === 0 && track ? Math.min(600, H - 110) : Math.min(520, H - 140));
+  const top = Math.round(H * 0.46 - cardH(1) / 2);
+  const y = (j) => (j < d ? top + (j ? h0 + 4 : 0) : Math.round(H * 0.46 - cardH(j) / 2));
   const pane = (j) => ({
-    className: `pane${j === 0 && track ? ' has-np' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
+    ref: j === 0 ? first : undefined,
+    className: `pane${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
     'data-back': j < d ? d - j : 0,
-    style: { width: w[j], zIndex: j + 1, transform: `translate3d(${left[j]}px, -50%, 0)` },
+    style: { width: w[j], height: j < d ? undefined : cardH(j), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
     onClick: (e) => {
       if (j < d && !e.target.closest('a')) setSt(j === 0 ? { ...st, s: -1, i: -1 } : { ...st, i: -1 });
     },

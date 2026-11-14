@@ -1,14 +1,15 @@
 import { paneLayout } from './Home';
 
-test('the current window stays on screen and the trail is at most a quarter of the width', () => {
+test('the current window stays on screen and the trail is one left column, at most a quarter wide', () => {
   for (const W of [375, 700, 900, 1000, 1200, 1600]) {
     for (const d of [0, 1, 2]) {
       const { w, left } = paneLayout(W, d);
       expect(left[d]).toBeGreaterThanOrEqual(16);
       expect(left[d] + w[d]).toBeLessThanOrEqual(W - 16);
-      const trail = w.slice(0, d).reduce((sum, x) => sum + x + 16, 0);
-      if (W >= 900) expect(trail).toBeLessThanOrEqual(W * 0.25);
-      if (d) expect(left[0]).toBe(16);
+      for (let j = 0; j < d; j++) {
+        expect(left[j]).toBe(16);
+        if (W >= 700) expect(left[j] + w[j]).toBeLessThanOrEqual(Math.min(W * 0.25, left[d]));
+      }
     }
   }
 });
