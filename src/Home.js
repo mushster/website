@@ -389,13 +389,17 @@ export default function Home() {
       </section>
 
       <section {...pane(2)} aria-hidden={d < 2}>
-        <div className="in" ref={reader} tabIndex={-1} style={{ paddingTop: top }}>
-          <button type="button" className="hd" aria-label={`Back to ${folder.t}`} tabIndex={d === 2 ? 0 : -1} onClick={stop(() => closeItem())}>
-            <span className="bk" aria-hidden="true">
-              ‹
-            </span>
-            <span className="ttl kind">{folder.t}</span>
-          </button>
+        <div className="in" ref={reader} tabIndex={-1} style={{ paddingTop: W < PHONE ? top : top - 5 }}>
+          {/* Beside the trail a page needs no header of its own: the folder there already names it and
+              leads back. On a phone the trail is hidden, so the page carries its own way back. */}
+          {W < PHONE && (
+            <button type="button" className="hd" aria-label={`Back to ${folder.t}`} tabIndex={d === 2 ? 0 : -1} onClick={stop(() => closeItem())}>
+              <span className="bk" aria-hidden="true">
+                ‹
+              </span>
+              <span className="ttl kind">{folder.t}</span>
+            </button>
+          )}
           <article className={`doc${item.airy ? ' airy' : ''}`} key={item.t}>
             {item.doc ? (
               <Suspense fallback={null}>
