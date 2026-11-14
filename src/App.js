@@ -4,10 +4,8 @@ import Home from './Home';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github.css';
 
-// The content pages pull in the markdown renderer, so they load only when visited.
-const BookNotes = lazy(() => import('./components/BookNotes'));
+// Loaded only when visited.
 const LLMsHome = lazy(() => import('./pages/LLMsHome'));
-const LLMPost = lazy(() => import('./pages/LLMPost'));
 
 function App() {
   return (
@@ -15,9 +13,10 @@ function App() {
       <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/books/:bookId" element={<BookNotes />} />
+          <Route path="/books/:bookId" element={<Home />} />
           <Route path="/llms" element={<LLMsHome />} />
-          <Route path="/llms/:postId" element={<LLMPost />} />
+          <Route path="/llms/:postId" element={<Home />} />
+          <Route path="/notes-to-me" element={<Home />} />
         </Routes>
       </Suspense>
     </HashRouter>

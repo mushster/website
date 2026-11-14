@@ -4,16 +4,19 @@
   --bg: #f6f6f6; --panel: #ffffff; --fg: #171717; --muted: #6f6f6f; --faint: #a1a1a1; --sel: #efefef; --rule: #e6e6e6;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 48px rgba(0, 0, 0, 0.09);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --name: #a4664d; --glass: rgba(255, 255, 255, 0.62); --frost: blur(10px) saturate(3);
   position: relative; height: 100dvh; overflow: hidden; background: var(--bg); color: var(--fg);
   font: 400 18px/1.25 "Fanwood Text", "Iowan Old Style", Georgia, serif;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
+/* Dark: a neutral near-black page, with windows and text given a faint warm cast. */
 @media (prefers-color-scheme: dark) {
   .hm {
-    --bg: #0b0b0b; --panel: #1a1a1a; --fg: #ededed; --muted: #8f8f8f; --faint: #5e5e5e; --sel: #242424; --rule: #282828;
+    --bg: #111111; --panel: #1a1815; --fg: #eceae8; --muted: #96938e; --faint: #64615d; --sel: #252320; --rule: #2b2926;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 48px rgba(0, 0, 0, 0.55);
+    --name: #c69076; --glass: rgba(4, 3, 3, 0.68); --frost: blur(12px) brightness(4.4) saturate(1.9);
   }
-  body:has(.hm) { background: #0b0b0b; }
+  body:has(.hm) { background: #111111; }
 }
 .hm ::selection { background: var(--fg); color: var(--bg); }
 .hm h1, .hm h2 { font: inherit; }
@@ -23,32 +26,50 @@
 
 .hm .pane {
   position: absolute; left: 0; top: 0; display: flex; flex-direction: column;
-  background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow);
-  transition: transform 480ms var(--ease), width 480ms var(--ease), height 480ms var(--ease), opacity 260ms ease-out, box-shadow 300ms ease-out, background-color 300ms ease-out, border-color 300ms ease-out;
+  /* Frosted glass that amplifies what is behind it: the name is invisible as letters back there, but
+     its color comes through the window as a glow. The tint is dark enough to cancel the brightening
+     everywhere the name is not. */
+  background: var(--glass); border: 1px solid var(--rule);
+  -webkit-backdrop-filter: var(--frost); backdrop-filter: var(--frost); border-radius: 14px; box-shadow: var(--shadow);
+  transition: transform 540ms var(--ease), width 540ms var(--ease), height 540ms var(--ease), opacity 260ms ease-out, box-shadow 300ms ease-out, background-color 300ms ease-out, border-color 300ms ease-out;
   will-change: transform;
 }
 .hm.boot .pane { transition: none; }
 .hm .in { display: flex; flex-direction: column; min-height: 0; flex: 1; transition: opacity 340ms ease-out 70ms; }
-.hm .pane.gone, .hm .pane.hid { opacity: 0; pointer-events: none; }
+.hm .pane.gone, .hm .pane.hid, .hm .pane.away { opacity: 0; pointer-events: none; }
+/* Only one list is ever open in the trail: while the folders are unfolded, the items drop back and fade. */
+.hm .pane.away { transition-duration: 220ms; }
 .hm .pane.gone .in { opacity: 0; transition-delay: 0s; transition-duration: 160ms; }
 
 .hm .home { padding: 36px 36px 12px; display: flex; flex-direction: column; gap: 16px; }
 .hm .home p { font-size: 20px; line-height: 1.2; max-width: 54ch; }
-.hm .who { display: flex; flex-direction: column; }
-.hm .role, .hm .kind, .hm .d { color: var(--muted); }
+.hm .kind, .hm .d { color: var(--muted); }
+
+/* The name: one muted clay tone, the only color on the site. It bounces around the page behind
+   the windows and text; Home.js works out each leg of the bounce. Until the first path starts, and
+   for visitors who ask for reduced motion, it rests at the top left. */
+.hm .mark { position: absolute; left: 0; top: 0; z-index: 0; color: var(--name); letter-spacing: 0.34em; white-space: nowrap; transform: translate(17px, 18px); will-change: transform; }
+/* In the open the name is plain, with no glow of its own. It disappears while you read a page. */
+.hm .mark { transition: opacity 320ms ease-out; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.hm .mark.held { cursor: grabbing; }
+.hm.reading .mark { opacity: 0; pointer-events: none; }
 .hm .n { color: var(--faint); white-space: nowrap; }
-.hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; }
-.hm .hd h2 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hm .bk { width: 24px; height: 24px; border-radius: 6px; text-align: center; color: var(--muted); flex: none; }
-.hm .bk:hover { background: var(--sel); color: var(--fg); }
+/* Home: a small mark at the top left, on every view except the landing window itself. */
+.hm .hb { position: absolute; left: 11px; top: 12px; z-index: 6; display: inline-flex; padding: 7px; border-radius: 8px; color: var(--faint); transition: opacity 260ms ease-out, color 120ms ease-out, background 120ms ease-out, transform 120ms var(--ease); }
+.hm .hb:hover { color: var(--fg); background: var(--sel); }
+.hm .hb:active { transform: scale(0.94); }
+.hm .hb.off { opacity: 0; pointer-events: none; }
+/* A window's header is one button: clicking anywhere on it goes back. */
+.hm .hd { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; flex: none; }
+.hm .hd .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 140ms ease-out; }
+.hm .bk { width: 24px; text-align: center; color: var(--muted); flex: none; }
+.hm .hd:hover .bk, .hm .hd:hover .ttl { color: var(--fg); }
 .hm .bd { padding: 0 8px 8px; overflow-y: auto; min-height: 0; flex: 1; }
 .hm .pane:first-of-type:not(.back) .bd { padding: 12px 24px 24px; }
 
 .hm .lst { display: flex; flex-direction: column; gap: 1px; }
 .hm .lst button { width: 100%; padding: 7px 12px; border-radius: 8px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .hm .pane:first-of-type:not(.back) .lst button { padding: 9px 12px; }
-.hm .lst button.two { flex-direction: column; gap: 0; align-items: stretch; }
-.hm .lst .d { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .lst button:hover, .hm .lst button.cur, .hm .lst button.on { background: var(--sel); }
 
 /* Now playing: only rendered while a track is playing; the landing window grows to hold it. */
@@ -69,29 +90,78 @@
 
 /* Earlier windows lose their card and shrink to a bare column of titles; only the picked row stays lit. */
 .hm .pane.back { box-shadow: none; background: transparent; border-color: transparent; cursor: pointer; }
-.hm .pane.back .home p, .hm .pane.back .d, .hm .pane.back .bk, .hm .pane.back .n, .hm .pane.back .role { display: none; }
-.hm .pane.back .home { padding: 14px 12px 4px; }
-.hm .pane.back .hd { padding: 6px 12px 4px; }
-.hm .pane.back h1, .hm .pane.back h2 { color: var(--muted); font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Only real windows are frosted; the trail and pages have no surface, so the name passes behind them sharp. */
+.hm .pane.back, .hm .pane.read { -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* In the trail a window keeps only its rows: no bio, heading or counts. */
+.hm .pane.back .home, .hm .pane.back .hd, .hm .pane.back .n { display: none; }
 .hm .pane.back .bd { padding-inline: 0; overflow: hidden; }
-.hm .pane.back .lst { gap: 0; }
-.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; padding: 1px 12px; transition: color 160ms ease-out; }
+/* Trail rows are exactly 22px tall so the marker can slide by row index. */
+.hm .pane.back .lst { gap: 0; position: relative; }
+.hm .pane.back .lst::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--rule); }
+.hm .mk { display: none; }
+.hm .pane.back .mk { display: block; position: absolute; left: 0; top: 0; width: 1px; height: 22px; background: var(--fg); transform: translateY(calc(var(--at) * 22px)); transition: transform 300ms var(--ease); }
+.hm .pane.back .lst button { color: var(--faint); background: none; font-size: 16px; line-height: 20px; height: 22px; padding: 1px 12px; overflow: hidden; transition: color 140ms ease-out, transform 340ms var(--ease), opacity 240ms ease-out; }
+/* The top group (the folder) is a size up, never dimmed, and sits flush left with no
+   rail. The rail belongs to the items: it starts directly under the folder's name and the items hang
+   off it, inset by its gutter, so they read as that folder's contents. */
+.hm .pane.back:first-of-type .lst::before { display: none; }
+.hm .pane.back:first-of-type .lst button { font-size: 18px; line-height: 22px; height: 24px; padding-inline: 0; }
+/* On a page the trail is a path: the other folders fold away until you point at the group, and the
+   list below drops its heading because the folded row already names the folder. */
+.hm .pane.fold .lst button:not(.on) { opacity: 0; pointer-events: none; transform: translateY(var(--dy)); }
+.hm .pane.back:nth-of-type(2) .in { padding-top: 0; }
+.hm .pane.back .lst button:hover { color: var(--fg); transform: translateX(3px); }
+.hm .pane.back .lst button:active { transform: translateX(3px) scale(0.97); transition-duration: 80ms; }
 .hm .pane.back .lst .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hm .pane.back .lst button.on { color: var(--fg); }
-.hm .pane.back:hover .lst button:not(.on) { color: var(--muted); }
-.hm .pane[data-back="2"] .in { opacity: 0.55; }
 
-.hm .pv { padding: 4px 22px 24px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1; }
-.hm .pv h1 { font-size: 22px; }
-.hm .txt { display: flex; flex-direction: column; gap: 12px; font-size: 20px; line-height: 1.2; }
 .hm .meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 20px; font-size: 17px; padding-top: 14px; border-top: 1px solid var(--rule); }
 .hm .meta dt { color: var(--muted); }
 .hm .meta dd { overflow-wrap: anywhere; }
-.hm .open { align-self: flex-start; display: inline-flex; gap: 10px; align-items: center; padding: 6px 8px 6px 12px; border: 1px solid var(--rule); border-radius: 8px; transition: background 120ms ease-out, transform 120ms var(--ease); }
-.hm .open:hover { background: var(--sel); }
-.hm .open:active { transform: scale(0.97); }
 
+/* Links out of the site are only ever this small icon. */
+.hm .rw { position: relative; }
+.hm .ext { display: inline-flex; padding: 4px; border-radius: 6px; color: var(--faint); vertical-align: middle; transition: color 120ms ease-out, background 120ms ease-out; }
+.hm .ext:hover { color: var(--fg); background: var(--sel); }
+.hm .pane.back .ext { display: none; }
+/* A cover image is a wide band at the head of its essay. It does not appear in the list. */
+.hm .doc .hero { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover; object-position: 50% 32%; border-radius: 10px; margin-bottom: 1.5em; }
+.hm .doc h1 .ext { margin-left: 8px; }
+
+/* The third level has no card: every item is a full-height page you scroll. */
+.hm .pane.read { background: transparent; border-color: transparent; box-shadow: none; border-radius: 0; }
+.hm .pane.read .in { overflow-y: auto; padding-bottom: 120px; outline: 0; scrollbar-width: none; }
+.hm .pane.read .in::-webkit-scrollbar { display: none; }
+.hm .pane.read .hd { padding: 0 0 18px; margin-left: -6px; align-self: flex-start; }
+.hm .doc { font-size: 20px; line-height: 1.42; overflow-wrap: break-word; }
+.hm .doc > * + * { margin-top: 0.85em; }
+.hm .doc.airy > * + * { margin-top: 1.6em; }
+.hm .doc h1 { font-size: 27px; line-height: 1.15; }
+.hm .doc h2 { font-size: 22px; line-height: 1.2; margin-top: 1.7em; }
+.hm .doc h3 { font-size: 20px; font-style: italic; margin-top: 1.4em; }
+.hm .doc ul, .hm .doc ol { padding-left: 1.3em; }
+.hm .doc ul { list-style: disc; }
+.hm .doc ol { list-style: decimal; }
+.hm .doc li + li { margin-top: 0.3em; }
+.hm .doc a, .hm .lk { color: inherit; text-decoration: underline; text-decoration-color: var(--faint); text-underline-offset: 3px; }
+.hm .doc blockquote { border-left: 2px solid var(--rule); padding-left: 16px; color: var(--muted); font-style: italic; }
+.hm .doc code { font: 15px/1.5 ui-monospace, "SF Mono", Menlo, monospace; background: var(--sel); padding: 1px 5px; border-radius: 4px; }
+.hm .doc pre { overflow-x: auto; background: var(--sel); padding: 14px 16px; border-radius: 8px; }
+.hm .doc pre code { background: none; padding: 0; }
+.hm .doc hr { border: 0; border-top: 1px solid var(--rule); margin-block: 2em; }
+.hm .doc img { max-width: 100%; }
+.hm.reading .keys { opacity: 0; pointer-events: none; }
+/* Switching folders: the list window's rows and title travel in from the direction you moved. */
+.hm .pane:not(.back) .swap { animation: hm-swap 340ms var(--ease) both; }
+@keyframes hm-swap { from { opacity: 0; transform: translateY(var(--from, 12px)); } }
+/* A page settles in when it opens or is swapped from the trail. */
+.hm .doc { animation: hm-in 320ms var(--ease) both; }
+@keyframes hm-in { from { opacity: 0; transform: translateY(8px); } }
+.hm .bk { transition: transform 200ms var(--ease), color 140ms ease-out; }
+.hm .hd:hover .bk { transform: translateX(-2px); }
+
+.hm .keys { transition: opacity 200ms ease-out; }
 .hm .keys { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 4px; font-size: 16px; color: var(--faint); }
 .hm .keys span { margin: 0 8px 0 2px; }
-@media (hover: none) { .hm .keys, .hm .open kbd { display: none; } .hm .open { padding-right: 12px; } }
-@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i { animation: none; } }
+@media (hover: none) { .hm .keys { display: none; } }
+@media (prefers-reduced-motion: reduce) { .hm .pane, .hm .in { transition: none; } .hm .np .bars i, .hm .doc, .hm .swap { animation: none !important; } .hm .mk, .hm .pane.back .lst button { transition: none; } }

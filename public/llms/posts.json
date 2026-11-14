@@ -1,8 +1,9 @@
 [
   {
-    "id": "star-wars",
-    "title": "Star Wars",
-    "summary": "A galaxy far, far away that shaped my childhood",
-    "lastUpdated": "2026-01-07"
+    "id": "superpowers",
+    "title": "Superpowers",
+    "summary": "Simple things you can keep doing over and over",
+    "lastUpdated": "2026-11-13",
+    "airy": true
   }
 ]
