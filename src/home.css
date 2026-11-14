@@ -50,7 +50,8 @@
    for visitors who ask for reduced motion, it rests at the top left. */
 .hm .mark { position: absolute; left: 0; top: 0; z-index: 0; color: var(--name); letter-spacing: 0.34em; white-space: nowrap; transform: translate(17px, 18px); will-change: transform; }
 /* In the open the name is plain, with no glow of its own. It disappears while you read a page. */
-.hm .mark { transition: opacity 320ms ease-out; }
+.hm .mark { transition: opacity 320ms ease-out; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.hm .mark.held { cursor: grabbing; }
 .hm.reading .mark { opacity: 0; pointer-events: none; }
 .hm .n { color: var(--faint); white-space: nowrap; }
 /* A window's header is one button: clicking anywhere on it goes back. */

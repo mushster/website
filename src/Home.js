@@ -92,14 +92,15 @@ function useNowPlaying() {
 const rand = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
 
 // One crossing of a W by H page for a label of size w by h: it starts just outside one edge, ends just
-// outside a different edge, and bends through two random points on the way (a cubic curve). Every
+// outside a different edge, and bends through two random points on the way (a cubic curve). Given a
+// start point, it sets off from there instead of from an edge. Every
 // number comes from rand(), about 256 random bits per crossing, so no two crossings are alike.
 // Returns keyframes spaced by distance travelled, so the label moves at a steady speed.
-export function crossing(W, H, w, h) {
+export function crossing(W, H, w, h, start) {
   const onEdge = (e) => [[-w, rand() * (H - h)], [W, rand() * (H - h)], [rand() * (W - w), -h], [rand() * (W - w), H]][e];
   const from = Math.floor(rand() * 4);
   const to = (from + 1 + Math.floor(rand() * 3)) % 4;
-  const p = [onEdge(from), [rand() * W, rand() * H], [rand() * W, rand() * H], onEdge(to)];
+  const p = [start || onEdge(from), [rand() * W, rand() * H], [rand() * W, rand() * H], onEdge(to)];
   const at = (t) => [0, 1].map((k) => (1 - t) ** 3 * p[0][k] + 3 * (1 - t) ** 2 * t * p[1][k] + 3 * (1 - t) * t ** 2 * p[2][k] + t ** 3 * p[3][k]);
   const pts = Array.from({ length: 49 }, (_, n) => at(n / 48));
   let length = 0;
@@ -143,6 +144,9 @@ export default function Home() {
   const reader = useRef(null);
   const list0 = useRef(null);
   const mark = useRef(null);
+  const dragged = useRef(false);
+  const letGo = useRef(null);
+  const homeTimer = useRef(0);
   const swapFrom = useRef(0);
   const swapDir = useRef(1);
   // The item row under the pointer in the trail; the rail's marker slides there and back to the current item.
@@ -179,30 +183,115 @@ export default function Home() {
   // href: somewhere outside the site, shown only as a small icon and never followed by a row click.
   useEffect(() => {
     const el = mark.current;
-    if (!el.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-    let anim;
+    const still = !el.animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let anim = null;
     let live = true;
+    // pinned: you dropped the name somewhere, so it stays there and stops drifting.
+    let pinned = false;
+    let grab = null;
+    const size = () => [root.current.clientWidth, root.current.clientHeight];
+    const place = (x, y) => {
+      el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    };
+    const where = () => {
+      const a = el.getBoundingClientRect();
+      const b = root.current.getBoundingClientRect();
+      return [a.left - b.left, a.top - b.top];
+    };
+    const saved = () => {
+      try {
+        return JSON.parse(localStorage.getItem('name-at'));
+      } catch {
+        return null;
+      }
+    };
     // startAt: how far along the first crossing begins, so the name is already on screen at load.
-    const go = (startAt) => {
-      if (!live) return;
-      // Drop the finished crossing so they do not pile up on the element.
+    // from: start the path here instead of at an edge.
+    const go = (startAt, from) => {
+      if (!live || still || pinned) return;
       if (anim) anim.cancel();
-      const { length, frames } = crossing(root.current.clientWidth, root.current.clientHeight, el.offsetWidth, el.offsetHeight);
+      const [W, H] = size();
+      const { length, frames } = crossing(W, H, el.offsetWidth, el.offsetHeight, from);
       const duration = (length / (30 + rand() * 20)) * 1000;
       anim = el.animate(frames, { duration, easing: 'linear', fill: 'both' });
       anim.currentTime = duration * startAt;
       anim.onfinish = () => go(0);
     };
+    // The spot is stored as fractions of the page, so it survives a resize and a reload.
+    const restore = () => {
+      const at = saved();
+      if (!at) return false;
+      const [W, H] = size();
+      place(at[0] * W, at[1] * H);
+      return true;
+    };
+    pinned = restore();
     go(0.3);
-    const pause = () => anim.pause();
-    const play = () => anim.play();
+
+    const down = (e) => {
+      const [x, y] = where();
+      grab = { dx: e.clientX - x, dy: e.clientY - y, x0: e.clientX, y0: e.clientY, moved: false };
+      el.setPointerCapture(e.pointerId);
+      if (anim) anim.pause();
+    };
+    const move = (e) => {
+      if (!grab) return;
+      // A press only becomes a drag once it has travelled a little; otherwise it is a click.
+      if (!grab.moved && Math.hypot(e.clientX - grab.x0, e.clientY - grab.y0) < 4) return;
+      if (!grab.moved) {
+        const [x, y] = where();
+        grab.moved = true;
+        if (anim) anim.cancel();
+        anim = null;
+        place(x, y);
+        el.classList.add('held');
+      }
+      const [W, H] = size();
+      place(Math.max(0, Math.min(W - el.offsetWidth, e.clientX - grab.dx)), Math.max(0, Math.min(H - el.offsetHeight, e.clientY - grab.dy)));
+    };
+    const up = () => {
+      if (!grab) return;
+      if (grab.moved) {
+        const [x, y] = where();
+        const [W, H] = size();
+        pinned = true;
+        dragged.current = true;
+        el.classList.remove('held');
+        try {
+          localStorage.setItem('name-at', JSON.stringify([x / W, y / H]));
+        } catch {}
+      } else if (anim) anim.play();
+      grab = null;
+    };
+    // Double-click lets it go: it drifts off again from wherever it was resting.
+    letGo.current = () => {
+      if (!pinned) return;
+      pinned = false;
+      try {
+        localStorage.removeItem('name-at');
+      } catch {}
+      go(0, where());
+    };
+    const pause = () => anim && anim.pause();
+    const play = () => anim && !grab && anim.play();
+    const resize = () => pinned && restore();
+    el.addEventListener('pointerdown', down);
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
     el.addEventListener('mouseenter', pause);
     el.addEventListener('mouseleave', play);
+    window.addEventListener('resize', resize);
     return () => {
       live = false;
-      anim.cancel();
+      if (anim) anim.cancel();
+      el.removeEventListener('pointerdown', down);
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', up);
       el.removeEventListener('mouseenter', pause);
       el.removeEventListener('mouseleave', play);
+      window.removeEventListener('resize', resize);
     };
   }, []);
 
@@ -371,9 +460,29 @@ export default function Home() {
         <title>{NAME}</title>
       </Helmet>
 
-      {/* The name drifts across the page behind everything else, in the only color on the site, on a path
-          that is drawn fresh for every crossing. Clicking it leads home. */}
-      <button type="button" className="mark" ref={mark} aria-label={`${NAME}, home`} onClick={closeFolder}>
+      {/* The name drifts across the page behind everything else, on a path that is drawn fresh for every
+          crossing. You can drag it and drop it anywhere, where it stays until you double-click it.
+          A single click leads home. */}
+      <button
+        type="button"
+        className="mark"
+        ref={mark}
+        aria-label={`${NAME}, home`}
+        onClick={(e) => {
+          // The click that ends a drag is not a click. A single click goes home, after a beat so that
+          // a double-click (which lets the name go) does not also navigate.
+          if (dragged.current) {
+            dragged.current = false;
+            return;
+          }
+          clearTimeout(homeTimer.current);
+          if (e.detail <= 1) homeTimer.current = setTimeout(closeFolder, e.detail ? 230 : 0);
+        }}
+        onDoubleClick={() => {
+          clearTimeout(homeTimer.current);
+          letGo.current();
+        }}
+      >
         {NAME}
       </button>
 

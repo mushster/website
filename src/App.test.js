@@ -42,4 +42,5 @@ test('a crossing starts and ends off screen on different edges, and no two are a
   expect(xy(a.frames[0])).not.toEqual(xy(a.frames[48]));
   a.frames.forEach((f, n) => n && expect(f.offset).toBeGreaterThanOrEqual(a.frames[n - 1].offset));
   expect(crossing(W, H, w, h).frames).not.toEqual(a.frames);
+  expect(xy(crossing(W, H, w, h, [500, 300]).frames[0])).toEqual([500, 300]);
 });
