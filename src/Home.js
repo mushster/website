@@ -283,7 +283,8 @@ export default function Home() {
     ...(j === 0 ? { onMouseLeave: () => unfold(false) } : {}),
     className: `pane${j === 0 && folded ? ' fold' : ''}${j === 1 && d === 2 && open0 ? ' away' : ''}${tall(j) ? ' read' : ''}${j < d ? ' back' : ''}${j > d ? ' gone' : ''}${j < d && W < PHONE ? ' hid' : ''}`,
     'data-back': j < d ? d - j : 0,
-    style: { width: w[j], height: j < d ? undefined : cardH(j), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
+    // The list window is only as tall as its rows, up to the usual window height; longer lists scroll.
+    style: { width: w[j], ...(j === 1 ? { maxHeight: cardH(1) } : { height: j < d ? undefined : cardH(j) }), zIndex: j + 1, transform: `translate3d(${left[j]}px, ${y(j)}px, 0)` },
     onClick: (e) => {
       if (j < d && !e.target.closest('a')) (j === 0 ? closeFolder : closeItem)();
     },
